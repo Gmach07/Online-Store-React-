@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Box, Button, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Box, 
+  Button, 
+  IconButton, 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemIcon, 
+  ListItemText 
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const MenuAppBar = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleDrawer = (open) => (event) => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -18,9 +31,9 @@ const MenuAppBar = () => {
   };
 
   const menuItems = [
-    { text: 'Home', icon: <HomeIcon />, href: '/' },
-    { text: 'About', icon: <InfoIcon />, href: '/about' },
-    { text: 'Contact', icon: <ContactMailIcon />, href: '/contact' },
+    { text: 'Home', icon: <HomeIcon />, path: '/' },
+    { text: 'About', icon: <InfoIcon />, path: '/about' },
+    { text: 'Contact', icon: <ContactMailIcon />, path: '/contact' },
   ];
 
   return (
@@ -32,8 +45,13 @@ const MenuAppBar = () => {
             <MenuIcon />
           </IconButton>
 
-          {/* Logo e ícono */}
-          <Box display="flex" alignItems="center">
+          {/* Logo e ícono con navegación a home */}
+          <Box 
+            display="flex" 
+            alignItems="center" 
+            sx={{ cursor: 'pointer' }}
+            onClick={() => navigate('/')}
+          >
             <IconButton edge="start" aria-label="store" color="inherit">
               <StorefrontIcon fontSize="large" />
             </IconButton>
@@ -42,19 +60,30 @@ const MenuAppBar = () => {
             </Typography>
           </Box>
 
-          {/* Botón de login */}
-          <Button color="inherit" href="/Login" sx={{ fontWeight: 'bold' }}>
+          {/* Botón de login con React Router */}
+          <Button 
+            color="inherit" 
+            component={Link}
+            to="/login"
+            sx={{ fontWeight: 'bold' }}
+          >
             Login
           </Button>
         </Toolbar>
       </AppBar>
 
-      {/* Drawer */}
+      {/* Drawer con React Router */}
       <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer(false)}>
-        <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+        <Box sx={{ width: 250 }} role="presentation">
           <List>
             {menuItems.map((item, index) => (
-              <ListItem button key={index} component="a" href={item.href}>
+              <ListItem 
+                button 
+                key={index} 
+                component={Link}
+                to={item.path}
+                onClick={toggleDrawer(false)}
+              >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItem>
