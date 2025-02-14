@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   TextField, 
@@ -12,7 +12,35 @@ import {
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link as RouterLink } from 'react-router-dom';
 
+const clearUsuario = {
+  nombre: '',
+    apellido: '',
+    correo: '',
+    password: ''
+}
+
 const RegistrarUsuario = () => {
+  const [usuario, setUsuario] = useState({
+    nombre: '',
+    apellido: '',
+    correo: '',
+    password: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUsuario(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const guardarUsuario = (e) => {
+    e.preventDefault();
+    console.log("Usuario registrado:", usuario);
+    setUsuario(clearUsuario);
+  };
+
   return (
     <Box
       sx={{
@@ -67,6 +95,8 @@ const RegistrarUsuario = () => {
 
         <Box 
           component="form" 
+          onSubmit={guardarUsuario}
+          //onSubmit={(e)=>e.preventDefault()}
           sx={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -76,6 +106,9 @@ const RegistrarUsuario = () => {
           <TextField
             label="Nombre"
             variant="filled"
+            name="nombre"
+            value={usuario.nombre}
+            onChange={handleChange}
             fullWidth
             required
             autoFocus
@@ -91,6 +124,9 @@ const RegistrarUsuario = () => {
           <TextField
             label="Apellido"
             variant="filled"
+            name="apellido"
+            value={usuario.apellido}
+            onChange={handleChange}
             fullWidth
             required
             InputProps={{ disableUnderline: true }}
@@ -106,6 +142,9 @@ const RegistrarUsuario = () => {
             label="Correo Electrónico"
             type="email"
             variant="filled"
+            name="correo"
+            value={usuario.correo}
+            onChange={handleChange}
             fullWidth
             required
             autoComplete="email"
@@ -122,6 +161,9 @@ const RegistrarUsuario = () => {
             label="Contraseña"
             type="password"
             variant="filled"
+            name="password"
+            value={usuario.password}
+            onChange={handleChange}
             fullWidth
             required
             autoComplete="new-password"
@@ -138,12 +180,13 @@ const RegistrarUsuario = () => {
             variant="contained"
             fullWidth
             size="large"
+            type="submit"
             sx={{
               mt: 2,
               py: 1.5,
               fontWeight: 'bold',
               borderRadius: 1,
-              textTransform: 'none'
+              textTransform: 'none',
             }}
           >
             Registrarse

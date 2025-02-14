@@ -17,6 +17,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
+import BookIcon from '@mui/icons-material/Book'; // Icono nuevo para Libro
 import { Link, useNavigate } from 'react-router-dom';
 
 const MenuAppBar = () => {
@@ -30,8 +31,10 @@ const MenuAppBar = () => {
     setIsDrawerOpen(open);
   };
 
+  // Agregamos la opción "Libros" al menú
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, path: '/' },
+    { text: 'Libros', icon: <BookIcon />, path: '/libros' }, // Nueva entrada
     { text: 'About', icon: <InfoIcon />, path: '/about' },
     { text: 'Contact', icon: <ContactMailIcon />, path: '/contact' },
   ];
@@ -40,12 +43,12 @@ const MenuAppBar = () => {
     <>
       <AppBar position="static" sx={{ backgroundColor: 'primary.main' }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Botón del menú */}
+          {/* Menú lateral */}
           <IconButton edge="start" color="inherit" onClick={toggleDrawer(true)}>
             <MenuIcon />
           </IconButton>
 
-          {/* Logo e ícono con navegación a home */}
+          {/* Logo */}
           <Box 
             display="flex" 
             alignItems="center" 
@@ -60,19 +63,32 @@ const MenuAppBar = () => {
             </Typography>
           </Box>
 
-          {/* Botón de login con React Router */}
-          <Button 
-            color="inherit" 
-            component={Link}
-            to="/login"
-            sx={{ fontWeight: 'bold' }}
-          >
-            Login
-          </Button>
+          {/* Botones de acceso directo */}
+          <Box display="flex" gap={2}>
+            {/* Botón para Libros */}
+            <Button 
+              color="inherit" 
+              component={Link}
+              to="/libros"
+              sx={{ fontWeight: 'bold' }}
+            >
+              Libros
+            </Button>
+
+            {/* Botón de Login */}
+            <Button 
+              color="inherit" 
+              component={Link}
+              to="/login"
+              sx={{ fontWeight: 'bold' }}
+            >
+              Login
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Drawer con React Router */}
+      {/* Menú desplegable */}
       <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer(false)}>
         <Box sx={{ width: 250 }} role="presentation">
           <List>

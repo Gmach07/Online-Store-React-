@@ -5,6 +5,7 @@ import theme from './theme/theme';
 import MenuAppBar from './componentes/navegacion/MenuAppBar';
 import RegistrarUsuario from './componentes/seguridad/RegistrarUsuario';
 import Login from './componentes/seguridad/Login';
+import Libro from './componentes/pantallas/Libro';
 
 function App() {
   return (
@@ -12,31 +13,21 @@ function App() {
       <CssBaseline />
       <Router>
         <Box>
-          {/* Barra de navegación (visible en todas las rutas) */}
           <MenuAppBar />
 
-          {/* Contenido principal con rutas */}
+          {/* Contenedor principal de rutas */}
           <Routes>
-            {/* Ruta raíz: redirige a login (opcional) */}
+            {/* Redirección raíz */}
             <Route path="/" element={<Navigate to="/login" replace />} />
 
-            {/* Ruta para login */}
-            <Route path="/login" element={
-              <div>
-                
-                <Login />
-              </div>
-            } />
+            {/* Rutas principales */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/registro" element={<RegistrarUsuario />} />
+            
+            {/* Nueva ruta para libros (agregada aquí) */}
+            <Route path="/libros" element={<Libro />} />
 
-            {/* Ruta para registro */}
-            <Route path="/registro" element={
-              <div>
-                <h1></h1>
-                <RegistrarUsuario />
-              </div>
-            } />
-
-            {/* Ruta de fallback para páginas no encontradas */}
+            {/* Ruta para páginas no encontradas */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Box>
@@ -46,5 +37,6 @@ function App() {
 }
 
 export default App;
+
 
 
