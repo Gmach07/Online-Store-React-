@@ -12,7 +12,10 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Paper
+  Paper,
+  Dialog,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -42,6 +45,12 @@ const ClearLibro = {
 const Libro = () => {
     const classes = useStyles();
     const [libro, setLibro] = useState(ClearLibro);
+    const [open, setOpen] = useState(false);
+    const [libroEdita, setLibroEdita] = useState({
+        categoriaE: '',
+        tituloE: '',
+        autorE: ''
+    });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -59,12 +68,28 @@ const Libro = () => {
     };
     
     const abrirDialog = () => {
+        setOpen(true);
         console.log("boton editar funcionando");
     };
 
     const eliminarData = () => {
         console.log("boton eliminar funcionando");
     };
+
+    const handleChangeEdita = (e) => {
+        const { name, value } = e.target;
+        setLibroEdita((prev) => ({ ...prev, [name]: value }));
+    }
+
+    const cerrarDialog = () => { 
+        setOpen(false);
+    }
+
+    const editarData = (e) => {
+        e.preventDefault();
+        console.log("Libro editado:", libroEdita);
+        cerrarDialog();
+    }
 
     return (
         <Container className={classes.containermt}>
@@ -163,6 +188,64 @@ const Libro = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {/* Diálogo de edición */}
+            <Dialog 
+                open={open} 
+                onClose={cerrarDialog} 
+                maxWidth="xs" 
+                fullWidth
+            >
+                <DialogTitle align="center">Editar Libro</DialogTitle>
+                <DialogContent>
+                    <form onSubmit={editarData}>
+                        <TextField 
+                            select
+                            label="Categoría" 
+                            variant="outlined"
+                            fullWidth
+                            sx={{ my: 2 }}
+                            name="categoriaE"
+                            value={libroEdita.categoriaE}
+                            onChange={handleChangeEdita}
+                        >
+                            <MenuItem value="Programacion">Programación</MenuItem>
+                            <MenuItem value="Historia">Historia</MenuItem>
+                            <MenuItem value="Matematicas">Matemáticas</MenuItem>
+                        </TextField>
+                        
+                        <TextField 
+                            label="Título" 
+                            variant="outlined"
+                            fullWidth
+                            sx={{ my: 2 }}
+                            name="tituloE"
+                            value={libroEdita.tituloE}
+                            onChange={handleChangeEdita}
+                        />
+                        
+                        <TextField
+                            label="Autor"
+                            variant="outlined"
+                            fullWidth
+                            sx={{ my: 2 }}
+                            name="autorE"
+                            value={libroEdita.autorE}
+                            onChange={handleChangeEdita}
+                        />
+                        
+                        <Button 
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            sx={{ mt: 2 }}
+                            type="submit"
+                        >
+                            Guardar
+                        </Button>  
+                    </form>
+                </DialogContent>
+            </Dialog>
         </Container>
     );
 };
