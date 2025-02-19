@@ -145,7 +145,7 @@ const Libro = () => {
                                         fullWidth
                                         color="primary"
                                         type="submit"
-                                        onClick = {guardarData}
+                                        //onClick = {guardarData}
                                     >
                                         Guardar
                                     </Button>
