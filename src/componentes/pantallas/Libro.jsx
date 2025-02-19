@@ -18,6 +18,7 @@ import {
   DialogTitle
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { agregarLibro } from '../data/Libros';
 
 const useStyles = makeStyles((theme) => ({
   containermt: {
@@ -63,8 +64,9 @@ const Libro = () => {
     };
 
     const guardarData = () => {
+        agregarLibro(libro);
         console.log("Libro guardado:", libro);
-        setLibro({ ...ClearLibro });
+        setLibro({...ClearLibro });
     };
     
     const abrirDialog = () => {
@@ -138,10 +140,12 @@ const Libro = () => {
                                 
                                 <Grid item md={12} xs={12}>
                                     <Button
+
                                         variant="contained"
                                         fullWidth
                                         color="primary"
                                         type="submit"
+                                        onClick = {guardarData}
                                     >
                                         Guardar
                                     </Button>
