@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Container,
   Card, 
@@ -18,7 +18,7 @@ import {
   DialogTitle
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { agregarLibro } from '../data/Libros';
+import { agregarLibro, listarLibros, actualizarLibro, eliminarLibro } from '../data/Libros';
 
 const useStyles = makeStyles((theme) => ({
   containermt: {
@@ -40,22 +40,24 @@ const useStyles = makeStyles((theme) => ({
 const ClearLibro = {
   categoria: '',
   titulo: '',
-  autor: ''
+  autor: '',
+  key: null
 };
 
 const Libro = () => {
     const classes = useStyles();
     const [libro, setLibro] = useState(ClearLibro);
     const [open, setOpen] = useState(false);
-    const [libroEdita, setLibroEdita] = useState({
-        categoriaE: '',
-        tituloE: '',
-        autorE: ''
-    });
+    const [libroEdita, setLibroEdita] = useState(ClearLibro);
+    const [librosArray, setLibrosArray] = useState([]);
+
+    useEffect(() => {
+        setLibrosArray(listarLibros());
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setLibro((prev) => ({ ...prev, [name]: value }));
+        setLibro(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = (e) => {
@@ -64,32 +66,35 @@ const Libro = () => {
     };
 
     const guardarData = () => {
-        agregarLibro(libro);
-        console.log("Libro guardado:", libro);
-        setLibro({...ClearLibro });
+        const nuevoArrayLibros = agregarLibro(libro);
+        setLibrosArray(nuevoArrayLibros);
+        setLibro({ ...ClearLibro });
     };
     
-    const abrirDialog = () => {
+    const abrirDialog = (libro) => {
+        setLibroEdita(libro);
         setOpen(true);
-        console.log("boton editar funcionando");
     };
 
-    const eliminarData = () => {
-        console.log("boton eliminar funcionando");
+    const eliminarData = (key) => {
+        const nuevosLibros = eliminarLibro(key);
+        setLibrosArray(nuevosLibros);
     };
 
     const handleChangeEdita = (e) => {
         const { name, value } = e.target;
-        setLibroEdita((prev) => ({ ...prev, [name]: value }));
+        setLibroEdita(prev => ({ ...prev, [name]: value }));
     }
 
     const cerrarDialog = () => { 
         setOpen(false);
+        setLibroEdita(ClearLibro);
     }
 
     const editarData = (e) => {
         e.preventDefault();
-        console.log("Libro editado:", libroEdita);
+        const actualizados = actualizarLibro(libroEdita);
+        setLibrosArray(actualizados);
         cerrarDialog();
     }
 
@@ -109,6 +114,7 @@ const Libro = () => {
                                         name="categoria"
                                         value={libro.categoria}
                                         onChange={handleChange}
+                                        required
                                     >
                                         <MenuItem value="Programacion">Programación</MenuItem>
                                         <MenuItem value="Historia">Historia</MenuItem>
@@ -124,6 +130,7 @@ const Libro = () => {
                                         name="titulo"
                                         value={libro.titulo}
                                         onChange={handleChange}
+                                        required
                                     />
                                 </Grid>
                                 
@@ -135,17 +142,16 @@ const Libro = () => {
                                         name="autor"
                                         value={libro.autor}
                                         onChange={handleChange}
+                                        required
                                     />
                                 </Grid>
                                 
                                 <Grid item md={12} xs={12}>
                                     <Button
-
                                         variant="contained"
                                         fullWidth
                                         color="primary"
                                         type="submit"
-                                        //onClick = {guardarData}
                                     >
                                         Guardar
                                     </Button>
@@ -167,51 +173,47 @@ const Libro = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        <TableRow>
-                            <TableCell>Programacion</TableCell>
-                            <TableCell>Programacion con German</TableCell>
-                            <TableCell>German el mero queso</TableCell>
-                            <TableCell align="center">
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={abrirDialog}
-                                    sx={{ mr: 1 }}
-                                >
-                                    Editar
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    onClick={eliminarData}
-                                >
-                                    Eliminar
-                                </Button>
-                            </TableCell>
-                        </TableRow>
+                        {librosArray.map(libroObj => (
+                            <TableRow key={libroObj.key}>
+                                <TableCell>{libroObj.categoria}</TableCell>
+                                <TableCell>{libroObj.titulo}</TableCell>
+                                <TableCell>{libroObj.autor}</TableCell>
+                                <TableCell align="center">
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => abrirDialog(libroObj)}
+                                        sx={{ mr: 1 }}
+                                    >
+                                        Editar
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="secondary"
+                                        onClick={() => eliminarData(libroObj.key)}
+                                    >
+                                        Eliminar
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
 
-            {/* Diálogo de edición */}
-            <Dialog 
-                open={open} 
-                onClose={cerrarDialog} 
-                maxWidth="xs" 
-                fullWidth
-            >
+            <Dialog open={open} onClose={cerrarDialog} maxWidth="xs" fullWidth>
                 <DialogTitle align="center">Editar Libro</DialogTitle>
                 <DialogContent>
                     <form onSubmit={editarData}>
                         <TextField 
                             select
-                            label="Categoría" 
-                            variant="outlined"
+                            label="Categoría"
+                            name="categoria"
+                            value={libroEdita.categoria}
+                            onChange={handleChangeEdita}
                             fullWidth
                             sx={{ my: 2 }}
-                            name="categoriaE"
-                            value={libroEdita.categoriaE}
-                            onChange={handleChangeEdita}
+                            required
                         >
                             <MenuItem value="Programacion">Programación</MenuItem>
                             <MenuItem value="Historia">Historia</MenuItem>
@@ -220,22 +222,24 @@ const Libro = () => {
                         
                         <TextField 
                             label="Título" 
+                            name="titulo"
+                            value={libroEdita.titulo}
+                            onChange={handleChangeEdita}
                             variant="outlined"
                             fullWidth
                             sx={{ my: 2 }}
-                            name="tituloE"
-                            value={libroEdita.tituloE}
-                            onChange={handleChangeEdita}
+                            required
                         />
                         
                         <TextField
                             label="Autor"
+                            name="autor"
+                            value={libroEdita.autor}
+                            onChange={handleChangeEdita}
                             variant="outlined"
                             fullWidth
                             sx={{ my: 2 }}
-                            name="autorE"
-                            value={libroEdita.autorE}
-                            onChange={handleChangeEdita}
+                            required
                         />
                         
                         <Button 
@@ -245,7 +249,7 @@ const Libro = () => {
                             sx={{ mt: 2 }}
                             type="submit"
                         >
-                            Guardar
+                            Guardar cambios
                         </Button>  
                     </form>
                 </DialogContent>
