@@ -69,10 +69,10 @@ const MenuAppBar = () => {
             <Button 
               color="inherit" 
               component={Link}
-              to="/libros"
+              to="/productos"
               sx={{ fontWeight: 'bold' }}
             >
-              Libros
+              Productos
             </Button>
 
             {/* Botón de Login */}
@@ -83,6 +83,15 @@ const MenuAppBar = () => {
               sx={{ fontWeight: 'bold' }}
             >
               Login
+            </Button>
+             {/* Botón de carrito de compra */}
+             <Button 
+              color="inherit" 
+              component={Link}
+              to="/carritoCompras"
+              sx={{ fontWeight: 'bold' }}
+            >
+              Carrito
             </Button>
           </Box>
         </Toolbar>
