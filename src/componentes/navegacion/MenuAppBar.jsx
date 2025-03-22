@@ -10,62 +10,65 @@ import {
   List, 
   ListItem, 
   ListItemIcon, 
-  ListItemText 
+  ListItemText
 } from '@mui/material';
+import Person from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import HomeIcon from '@mui/icons-material/Home';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import InfoIcon from '@mui/icons-material/Info';
-import ContactMailIcon from '@mui/icons-material/ContactMail';
-import BookIcon from '@mui/icons-material/Book'; // Icono nuevo para Libro
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Link, useNavigate } from 'react-router-dom';
+import MenuCliente from './desktop/MenuCliente'; // Ajusta la ruta si está en otro directorio
 
-const MenuAppBar = () => {
+
+const MenuAppBar = ({ usuario }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const navigate = useNavigate();
 
   const toggleDrawer = (open) => (event) => {
-    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+    if (
+      event.type === 'keydown' &&
+      (event.key === 'Tab' || event.key === 'Shift')
+    ) {
       return;
     }
     setIsDrawerOpen(open);
   };
 
-  // Agregamos la opción "Libros" al menú
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, path: '/' },
-    { text: 'Libros', icon: <BookIcon />, path: '/libros' }, // Nueva entrada
-    { text: 'About', icon: <InfoIcon />, path: '/about' },
-    { text: 'Contact', icon: <ContactMailIcon />, path: '/contact' },
+    { text: 'Usuarios' , icon: <Person/>, path: '/usuarios'},
+    { text: 'Productos', icon: <StorefrontIcon />, path: '/productos' },
+    { text: 'Detalle Producto', icon: <InfoIcon />, path: '/detalleProducto' },
+    { text: 'Carrito', icon: <ShoppingCartIcon />, path: '/carritoCompras' },
+    {text: 'ListaProductos',  icon: <StorefrontIcon />, path: '/listaProductos'},
   ];
 
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: 'primary.main' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Menú lateral */}
+      <AppBar position="static">
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          {/* Botón para abrir el Drawer (menú lateral) */}
           <IconButton edge="start" color="inherit" onClick={toggleDrawer(true)}>
             <MenuIcon />
           </IconButton>
 
-          {/* Logo */}
-          <Box 
-            display="flex" 
-            alignItems="center" 
+          {/* Logo + Nombre tienda */}
+          <Box
+            display="flex"
+            alignItems="center"
             sx={{ cursor: 'pointer' }}
             onClick={() => navigate('/')}
           >
-            <IconButton edge="start" aria-label="store" color="inherit">
-              <StorefrontIcon fontSize="large" />
-            </IconButton>
+            <StorefrontIcon fontSize="large" />
             <Typography variant="h6" sx={{ ml: 1, fontWeight: 'bold' }}>
               GERMANSTORE
             </Typography>
           </Box>
 
-          {/* Botones de acceso directo */}
-          <Box display="flex" gap={2}>
-            {/* Botón para Libros */}
+          {/* Sección de botones y menú cliente */}
+          <Box display="flex" gap={2} alignItems="center">
             <Button 
               color="inherit" 
               component={Link}
@@ -75,17 +78,7 @@ const MenuAppBar = () => {
               Productos
             </Button>
 
-            {/* Botón de Login */}
             <Button 
-              color="inherit" 
-              component={Link}
-              to="/login"
-              sx={{ fontWeight: 'bold' }}
-            >
-              Login
-            </Button>
-             {/* Botón de carrito de compra */}
-             <Button 
               color="inherit" 
               component={Link}
               to="/carritoCompras"
@@ -93,11 +86,14 @@ const MenuAppBar = () => {
             >
               Carrito
             </Button>
+
+            {/* Menú del cliente con Avatar y nombre */}
+            <MenuCliente usuario={usuario} />
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Menú desplegable */}
+      {/* Menú lateral (Drawer) */}
       <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer(false)}>
         <Box sx={{ width: 250 }} role="presentation">
           <List>
@@ -121,6 +117,8 @@ const MenuAppBar = () => {
 };
 
 export default MenuAppBar;
+
+
 
 
 

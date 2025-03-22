@@ -13,8 +13,11 @@ import {
   Paper,
   Button
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
+  const navigate = useNavigate();
+
   const handleCantidadChange = (e, key) => {
     let nuevaCantidad = parseInt(e.target.value, 10) || 1;
     const producto = carrito.find(item => item.key === key);
@@ -26,7 +29,12 @@ const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
     eliminarProducto(key);
   };
 
-  const total = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+  const total = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0).toFixed(2);
+
+  // Al realizar el pedido, navegamos a '/procesoCompra' pasando el carrito en el state
+  const pedidoRealizado = () => {
+    navigate('/procesoCompra', { state: { carrito } });
+  };
 
   return (
     <Container sx={{ mt: 4 }}>
@@ -75,7 +83,7 @@ const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
                     </TableCell>
                     <TableCell align="center">
                       <Typography variant="h6">
-                        ${producto.precio * producto.cantidad}
+                        ${(producto.precio * producto.cantidad).toFixed(2)}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
@@ -101,6 +109,11 @@ const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
             </Table>
           </TableContainer>
         </Grid>
+      </Grid>
+      <Grid container justifyContent="center" sx={{ mt: 2 }}>
+        <Button variant="contained" color="primary" onClick={pedidoRealizado}>
+          Realizar Pedido
+        </Button>
       </Grid>
     </Container>
   );

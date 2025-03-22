@@ -25,8 +25,8 @@ const Productos = () => {
 
   return (
     <Container sx={{ 
-      mt: 8,
-      py: 6,
+      mt: 4,
+      py: 3,
       position: 'relative'
     }}>
       <Typography
@@ -90,7 +90,7 @@ const Productos = () => {
               <CardMedia
                 component="img"
                 image={producto.imagen}
-                alt={producto.titulo}
+                alt={producto.nombre}
                 sx={{ 
                   height: 250,
                   objectFit: 'contain',
@@ -127,7 +127,7 @@ const Productos = () => {
                     alignItems: 'center'
                   }}
                 >
-                  {producto.titulo}
+                  {producto.nombre}
                 </Typography>
                 
                 <Box sx={{ 

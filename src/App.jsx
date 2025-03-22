@@ -8,7 +8,16 @@ import Login from './componentes/seguridad/Login';
 import Productos from './componentes/pantallas/Productos';
 import DetalleProducto from './componentes/pantallas/DetalleProducto';
 import CarritoCompras from './componentes/pantallas/CarritoCompras';
-
+import ProcesoCompra from './componentes/pantallas/ProcesoCompra';
+import OrdenCompra from './componentes/pantallas/OrdenCompra';
+import Perfil from './componentes/seguridad/Perfil';
+import MenuCliente from './componentes/navegacion/desktop/MenuCliente';
+import Usuarios from './componentes/pantallas/admin/Usuarios';
+import EditarUsuario from './componentes/pantallas/admin/EditarUsuario';
+import ListaProductos from './componentes/pantallas/admin/ListaProductos';
+import AgregarProducto from './componentes/pantallas/admin/AgregarProducto';
+import EditarProducto from './componentes/pantallas/admin/EditarProducto';
+import ListaPedidos from './componentes/pantallas/admin/ListaPedidos';
 function App() {
   const [carrito, setCarrito] = useState([]);
 
@@ -50,6 +59,15 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<RegistrarUsuario />} />
             <Route path="/productos" element={<Productos />} />
+            <Route path="/menuCliente" element= {<MenuCliente/>} />
+            {/* Se pasa el carrito como prop para que ProcesoCompra siempre tenga acceso */}
+            <Route path="/procesoCompra" element={<ProcesoCompra carrito={carrito} />} />  
+            <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/editarUsuario/:id" element={<EditarUsuario />} /> 
+            <Route path="/listaProductos" element={<ListaProductos />} />
+            <Route path = "/agregarProducto" element={<AgregarProducto/>} />
+            <Route path="/editarProducto/:key" element={<EditarProducto />} />
+            <Route path="/listaPedidos" element={<ListaPedidos />} />
             <Route 
               path="/detalleProducto/:id" 
               element={<DetalleProducto agregarAlCarrito={agregarAlCarrito} />} 
@@ -64,6 +82,10 @@ function App() {
                 />
               } 
             />
+            {/* Se pasa el carrito como prop para que OrdenCompra siempre tenga acceso */}
+            <Route path="/ordenCompra/:id" element={<OrdenCompra />} />
+            <Route path="/perfil" element={<Perfil/>} />
+
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Box>
@@ -73,3 +95,4 @@ function App() {
 }
 
 export default App;
+
