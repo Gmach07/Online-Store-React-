@@ -11,12 +11,14 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link as RouterLink } from 'react-router-dom';
+import { registrarUsuario } from '../../actions/UsuarioActions';
 
 const clearUsuario = {
   nombre: '',
     apellido: '',
     correo: '',
-    password: ''
+    password: '',
+    username: ''
 }
 
 const RegistrarUsuario = () => {
@@ -24,7 +26,8 @@ const RegistrarUsuario = () => {
     nombre: '',
     apellido: '',
     correo: '',
-    password: ''
+    password: '',
+    username: ''
   });
 
   const handleChange = (e) => {
@@ -36,9 +39,16 @@ const RegistrarUsuario = () => {
   };
 
   const guardarUsuario = (e) => {
-    e.preventDefault();
+   /* e.preventDefault();
     console.log("Usuario registrado:", usuario);
-    setUsuario(clearUsuario);
+    setUsuario(clearUsuario);*/
+    registrarUsuario(usuario).then((response) => {
+      console.log("Usuario registrado:", response);
+      setUsuario(clearUsuario);
+    }).catch((error) => {
+      console.error("Error al registrar usuario:", error);
+    });
+      
   };
 
   return (
@@ -126,6 +136,23 @@ const RegistrarUsuario = () => {
             variant="filled"
             name="apellido"
             value={usuario.apellido}
+            onChange={handleChange}
+            fullWidth
+            required
+            InputProps={{ disableUnderline: true }}
+            sx={{
+              '& .MuiFilledInput-root': {
+                borderRadius: 1,
+                backgroundColor: 'action.hover',
+              }
+            }}
+          />
+
+          <TextField
+            label="Username"
+            variant="filled"
+            name="username"
+            value={usuario.username}
             onChange={handleChange}
             fullWidth
             required

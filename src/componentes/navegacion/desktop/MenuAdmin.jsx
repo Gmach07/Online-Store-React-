@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import GroupIcon from '@mui/icons-material/Group';
+import ReceiptIcon from '@mui/icons-material/Receipt'; // Nuevo ícono para ListaPedidos
 import LogoutIcon from '@mui/icons-material/Logout';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
@@ -30,7 +31,6 @@ const MenuAdmin = ({ usuario }) => {
 
   const handleLogout = () => {
     // Aquí iría tu lógica de cierre de sesión
-    // Ejemplo: limpiar tokens, llamar a un endpoint, etc.
     console.log('Cerrando sesión...');
     handleCloseMenu();
   };
@@ -62,7 +62,7 @@ const MenuAdmin = ({ usuario }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {/* Ejemplo de opción: Dashboard */}
+        {/* Opción: Dashboard */}
         <MenuItem
           component={Link}
           to="/admin/dashboard"
@@ -74,7 +74,7 @@ const MenuAdmin = ({ usuario }) => {
           <ListItemText primary="Dashboard" />
         </MenuItem>
 
-        {/* Ejemplo de opción: Administrar Productos */}
+        {/* Opción: Administrar Productos */}
         <MenuItem
           component={Link}
           to="/admin/productos"
@@ -83,10 +83,10 @@ const MenuAdmin = ({ usuario }) => {
           <ListItemIcon>
             <StorefrontIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText onClick={''} primary="Productos" />
+          <ListItemText primary="Productos" />
         </MenuItem>
 
-        {/* Ejemplo de opción: Administrar Usuarios */}
+        {/* Opción: Administrar Usuarios */}
         <MenuItem
           component={Link}
           to="/admin/usuarios"
@@ -96,6 +96,18 @@ const MenuAdmin = ({ usuario }) => {
             <GroupIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Usuarios" />
+        </MenuItem>
+
+        {/* Nueva opción: Lista de Pedidos */}
+        <MenuItem
+          component={Link}
+          to="/admin/listaPedidos"
+          onClick={handleCloseMenu}
+        >
+          <ListItemIcon>
+            <ReceiptIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Lista de Pedidos" />
         </MenuItem>
 
         {/* Opción: Cerrar Sesión */}
@@ -111,3 +123,4 @@ const MenuAdmin = ({ usuario }) => {
 };
 
 export default MenuAdmin;
+

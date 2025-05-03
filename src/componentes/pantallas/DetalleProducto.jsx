@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Container, 
   Grid, 
@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ProductoArray } from '../data/dataPruebas';
+import { getProductosById } from '../../actions/ProductoActions';
 
 const useStyles = makeStyles((theme) => ({
   containermt: {
@@ -76,15 +76,28 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
   const classes = useStyles();
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // Estado para almacenar el producto que se obtiene desde el backend
+  const [producto, setProducto] = useState(null);
   const [cantidad, setCantidad] = useState(1);
 
-  const producto = ProductoArray.find((item) => item.key === parseInt(id));
+  useEffect(() => {
+    // Llamada al backend para obtener el producto según el id de la URL
+    getProductosById(id)
+      .then((data) => {
+        setProducto(data);
+      })
+      .catch((error) => {
+        console.error('Error al obtener el producto:', error);
+      });
+  }, [id]);
 
+  // Si aún no se ha cargado el producto, muestra un mensaje o un loader
   if (!producto) {
     return (
       <Container className={classes.containermt}>
         <Typography variant="h4" className={classes.text_title}>
-          Producto no encontrado
+          Cargando producto...
         </Typography>
       </Container>
     );
@@ -92,7 +105,8 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
 
   const handleCantidadChange = (e) => {
     const value = parseInt(e.target.value) || 1;
-    setCantidad(Math.min(Math.max(value, 1), producto.unidades));
+    // Aquí usamos producto.stock en lugar de producto.unidades, ya que en el JSON se llama stock
+    setCantidad(Math.min(Math.max(value, 1), producto.stock));
   };
 
   const handleAgregarProducto = () => {
@@ -136,19 +150,19 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
               <Grid item xs={6}>
                 <Typography variant="body1">
                   <span className={classes.text_bold}>Disponibles:</span> 
-                  {producto.unidades} unidades
+                  {producto.stock} unidades
                 </Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="body1">
                   <span className={classes.text_bold}>Marca:</span> 
-                  {producto.marca}
+                  {producto.marcaNombre}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="body1">
-                  <span className={classes.text_bold}>Temporada:</span> 
-                  {producto.temporada}
+                  <span className={classes.text_bold}>Categoría:</span> 
+                  {producto.categoriaNombre}
                 </Typography>
               </Grid>
             </Grid>
@@ -165,7 +179,7 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
                 onChange={handleCantidadChange}
                 inputProps={{ 
                   min: 1,
-                  max: producto.unidades,
+                  max: producto.stock,
                   style: { 
                     width: '80px',
                     textAlign: 'center'

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Container, 
   Typography, 
@@ -10,11 +10,12 @@ import {
   Avatar,
   Chip,
   Box,
-  Skeleton
+  Pagination,
+  CircularProgress
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { ProductoArray } from '../data/dataPruebas';
 import { Star, ShoppingCart, ArrowForward } from '@mui/icons-material';
+import { getProductos } from '../../actions/ProductoActions';
 
 const Productos = () => {
   const navigate = useNavigate();
@@ -23,12 +24,66 @@ const Productos = () => {
     navigate(`/detalleProducto/${id}`);
   };
 
+  // Estado para almacenar el paginador completo
+  const [paginadorProductos, setPaginadorProductos] = useState({
+    count: 0,
+    pageIndex: 1,
+    pageSize: 3, // Tamaño de página por defecto
+    pageCount: 0,
+    data: []
+  });
+
+  // Estado para controlar la carga
+  const [loading, setLoading] = useState(false);
+  
+  // Estado para la página actual (opcional, pero se sincroniza con paginadorProductos.pageIndex)
+  const [pageIndex, setPageIndex] = useState(1);
+
+  // Función para cargar productos pasando pageIndex y pageSize
+  const cargarProductos = async (currentPage = 1, pageSize = 3) => {
+    setLoading(true);
+    try {
+      // Se asume que getProductos acepta un objeto de query params
+      const response = await getProductos({ PageIndex: currentPage, PageSize: pageSize });
+      // Supongamos que response es el objeto completo de paginación
+      setPaginadorProductos(response);
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar productos cada vez que cambia pageIndex
+  useEffect(() => {
+    cargarProductos(pageIndex, paginadorProductos.pageSize || 3);
+  }, [pageIndex]);
+
+  // Manejar el cambio de página
+  const handlePageChange = (event, value) => {
+    setPageIndex(value);
+  };
+
+  // Mostrar loader mientras se cargan los productos
+  if (loading) {
+    return (
+      <Container sx={{ textAlign: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  // Si no hay productos, muestra un mensaje
+  if (!paginadorProductos.data || paginadorProductos.data.length === 0) {
+    return (
+      <Container sx={{ textAlign: 'center', mt: 4 }}>
+        <Typography variant="h4">No se encontraron productos.</Typography>
+      </Container>
+    );
+  }
+
   return (
-    <Container sx={{ 
-      mt: 4,
-      py: 3,
-      position: 'relative'
-    }}>
+    <Container sx={{ mt: 4, py: 3, position: 'relative' }}>
       <Typography
         variant="h3"
         sx={{ 
@@ -52,8 +107,8 @@ const Productos = () => {
       </Typography>
       
       <Grid container spacing={4}>
-        {ProductoArray.map((producto) => (
-          <Grid item lg={3} sm={6} md={4} xs={12} key={producto.key}>
+        {paginadorProductos.data.map((producto) => (
+          <Grid item key={producto.id} xs={12} sm={6} md={4} lg={3}>
             <Card sx={{ 
               position: 'relative',
               overflow: 'visible',
@@ -81,7 +136,7 @@ const Productos = () => {
                   sx={{ fontWeight: 700 }}
                 />
                 <Chip
-                  label={`${producto.unidades} en stock`}
+                  label={`${producto.stock} en stock`}
                   color="warning"
                   size="small"
                 />
@@ -89,7 +144,7 @@ const Productos = () => {
 
               <CardMedia
                 component="img"
-                image={producto.imagen}
+                image={producto.imagen || 'https://via.placeholder.com/250'}
                 alt={producto.nombre}
                 sx={{ 
                   height: 250,
@@ -161,7 +216,7 @@ const Productos = () => {
                 variant="contained"
                 color="primary"
                 endIcon={<ArrowForward />}
-                onClick={() => verProducto(producto.key)}
+                onClick={() => verProducto(producto.id)}
                 sx={{
                   py: 1.5,
                   borderRadius: 2,
@@ -192,9 +247,18 @@ const Productos = () => {
           </Grid>
         ))}
       </Grid>
+      
+      {/* Componente de paginación */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Pagination 
+          count={paginadorProductos.pageCount}
+          page={pageIndex}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
     </Container>
   );
 };
 
 export default Productos;
-
