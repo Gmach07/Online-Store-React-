@@ -1,3 +1,4 @@
+// CarritoCompras.jsx
 import React from 'react';
 import {
   Container,
@@ -18,20 +19,21 @@ import { useNavigate } from 'react-router-dom';
 const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
   const navigate = useNavigate();
 
-  const handleCantidadChange = (e, key) => {
+  const handleCantidadChange = (e, id) => {
     let nuevaCantidad = parseInt(e.target.value, 10) || 1;
-    const producto = carrito.find(item => item.key === key);
-    nuevaCantidad = Math.min(Math.max(nuevaCantidad, 1), producto.unidades);
-    actualizarCantidad(key, nuevaCantidad);
+    const prod = carrito.find(item => item.id === id);
+    nuevaCantidad = Math.min(Math.max(nuevaCantidad, 1), prod.stock);
+    actualizarCantidad(id, nuevaCantidad);
   };
 
-  const handleEliminarProducto = (key) => {
-    eliminarProducto(key);
+  const handleEliminarProducto = (id) => {
+    eliminarProducto(id);
   };
 
-  const total = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0).toFixed(2);
+  const total = carrito
+    .reduce((acc, item) => acc + item.precio * item.cantidad, 0)
+    .toFixed(2);
 
-  // Al realizar el pedido, navegamos a '/procesoCompra' pasando el carrito en el state
   const pedidoRealizado = () => {
     navigate('/procesoCompra', { state: { carrito } });
   };
@@ -57,15 +59,23 @@ const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
               </TableHead>
               <TableBody>
                 {carrito.map((producto) => (
-                  <TableRow key={producto.key}>
+                  <TableRow key={producto.id}>
                     <TableCell align="center">
-                      <img src={producto.imagen} alt={producto.nombre} style={{ width: 100 }} />
+                      <img
+                        src={producto.imagen}
+                        alt={producto.nombre}
+                        style={{ width: 100 }}
+                      />
                     </TableCell>
                     <TableCell align="center">
-                      <Typography variant="h6">{producto.nombre}</Typography>
+                      <Typography variant="h6">
+                        {producto.nombre}
+                      </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <Typography variant="h6">${producto.precio}</Typography>
+                      <Typography variant="h6">
+                        ${producto.precio}
+                      </Typography>
                     </TableCell>
                     <TableCell align="center">
                       <TextField
@@ -73,10 +83,12 @@ const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
                         variant="outlined"
                         size="small"
                         value={producto.cantidad}
-                        onChange={(e) => handleCantidadChange(e, producto.key)}
-                        inputProps={{ 
-                          min: 1, 
-                          max: producto.unidades,
+                        onChange={(e) =>
+                          handleCantidadChange(e, producto.id)
+                        }
+                        inputProps={{
+                          min: 1,
+                          max: producto.stock,
                           style: { width: '80px', textAlign: 'center' }
                         }}
                       />
@@ -90,7 +102,7 @@ const CarritoCompras = ({ carrito, actualizarCantidad, eliminarProducto }) => {
                       <Button
                         variant="contained"
                         color="secondary"
-                        onClick={() => handleEliminarProducto(producto.key)}
+                        onClick={() => handleEliminarProducto(producto.id)}
                       >
                         Eliminar
                       </Button>

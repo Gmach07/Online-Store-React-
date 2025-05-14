@@ -1,12 +1,29 @@
+// src/servicios/HttpCliente.js
 import axios from 'axios';
 
-axios.defaults.baseURL = "http://localhost:5000";
-axios.defaults.withCredentials = true; 
-const requestGenerico ={
-    get: (url) => axios.get(url),
-    post: (url, body) => axios.post(url, body),
-    put: (url, body) => axios.put(url, body),
-    delete: (url) => axios.delete(url)
-}
+// En Vite, las env variables vienen de import.meta.env con prefijo VITE_
+const HttpCliente = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
 
-export default requestGenerico;
+// Interceptor de petición: se registra sobre la instancia HttpCliente
+HttpCliente.interceptors.request.use(
+  (config) => {
+    // Agregar el token de autorización a la cabecera de la solicitud
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    // Manejo de errores de la solicitud
+    return Promise.reject(error);
+  }
+);
+
+export default HttpCliente;

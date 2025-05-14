@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+// src/components/MenuCliente.jsx
+
+import React, { useState, useContext } from 'react';
 import {
   Avatar,
   Button,
@@ -8,15 +10,18 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
-
-// Íconos de Material UI (ajusta según tus necesidades)
+import { Link, useNavigate } from 'react-router-dom';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { SessionContext } from '../context/SessionContext';
+import { logoutUsuario } from '../actions/UsuarioActions';
 
-const MenuCliente = ({ usuario }) => {
+const MenuCliente = () => {
+  const { state, dispatch } = useContext(SessionContext);
+  const { usuario, isAuthenticated } = state.sesionUsuario;
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleOpenMenu = (event) => {
@@ -28,32 +33,34 @@ const MenuCliente = ({ usuario }) => {
   };
 
   const handleLogout = () => {
-    // Aquí iría tu lógica de cierre de sesión
-    // Ejemplo: limpiar tokens, llamar a un endpoint, etc.
-    console.log('Cerrando sesión...');
+    // Ejecuta acción de logout
+    logoutUsuario(dispatch);
     handleCloseMenu();
+    // Redirige al login o home
+    navigate('/login');
   };
+
+  // Si no está autenticado, no mostramos el menú
+  if (!isAuthenticated) return null;
 
   return (
     <>
-      {/* Botón que muestra Avatar + Nombre y abre el menú */}
       <Button
         color="inherit"
         onClick={handleOpenMenu}
         sx={{ display: 'flex', alignItems: 'center', textTransform: 'none' }}
       >
         <Avatar
-          src={usuario?.imagenPerfil}
-          alt="Avatar"
-          sx={{ width: 32, height: 32, marginRight: 1 }}
+          src={usuario.imagen || usuario.imagenPerfil}
+          alt={usuario.nombre}
+          sx={{ width: 32, height: 32, mr: 1 }}
         />
-        <Typography variant="body1" sx={{ marginRight: 1 }}>
-          {usuario?.nombre || 'Invitado'}
+        <Typography variant="body1" sx={{ mr: 0.5 }}>
+          {usuario.nombre}
         </Typography>
         <KeyboardArrowDownIcon />
       </Button>
 
-      {/* Menú desplegable */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -61,7 +68,6 @@ const MenuCliente = ({ usuario }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {/* Opción: Mis Pedidos */}
         <MenuItem
           component={Link}
           to="/misPedidos"
@@ -73,7 +79,6 @@ const MenuCliente = ({ usuario }) => {
           <ListItemText primary="Mis Pedidos" />
         </MenuItem>
 
-        {/* Opción: Perfil */}
         <MenuItem
           component={Link}
           to="/perfil"
@@ -85,7 +90,6 @@ const MenuCliente = ({ usuario }) => {
           <ListItemText primary="Perfil" />
         </MenuItem>
 
-        {/* Opción: Cerrar Sesión */}
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />

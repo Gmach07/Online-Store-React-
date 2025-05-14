@@ -1,5 +1,7 @@
-import React from 'react';
-import { 
+// src/pages/Login.jsx
+
+import React, { useState, useContext } from 'react';
+import {
   Container,
   Box,
   Typography,
@@ -9,18 +11,39 @@ import {
   TextField,
   Button,
   Link,
-  CssBaseline
+  CssBaseline,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { SessionContext } from '../context/SessionContext';
+import { loginUsuario } from '../actions/UsuarioActions';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { dispatch } = useContext(SessionContext);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Lógica de login aquí
-    navigate('/'); // Redirige al home después del login
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setOpenDialog(false);
+
+    try {
+      await loginUsuario({ email, password }, dispatch);
+      navigate('/productos');
+    } catch (err) {
+      setErrorMsg(typeof err === 'string' ? err : 'Usuario o contraseña incorrecta');
+      setOpenDialog(true);
+    }
   };
 
   return (
@@ -50,8 +73,9 @@ const Login = () => {
               label="Correo Electrónico"
               name="email"
               autoComplete="email"
-              autoFocus
               variant="filled"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <TextField
               margin="normal"
@@ -63,6 +87,8 @@ const Login = () => {
               id="password"
               autoComplete="current-password"
               variant="filled"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <Button
               type="submit"
@@ -71,13 +97,13 @@ const Login = () => {
               sx={{ mt: 3, mb: 2, py: 1.5 }}
               size="large"
             >
-              Ingresar
+              INGRESAR
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link 
-                  component={RouterLink} 
-                  to="/registro" 
+                <Link
+                  component={RouterLink}
+                  to="/registro"
                   variant="body2"
                   sx={{
                     textDecoration: 'none',
@@ -93,6 +119,25 @@ const Login = () => {
           </Box>
         </Card>
       </Box>
+
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        aria-labelledby="error-dialog-title"
+        aria-describedby="error-dialog-description"
+      >
+        <DialogTitle id="error-dialog-title">Error de Autenticación</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="error-dialog-description">
+            {errorMsg}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} autoFocus>
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

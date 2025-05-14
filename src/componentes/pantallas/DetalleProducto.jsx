@@ -77,22 +77,15 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Estado para almacenar el producto que se obtiene desde el backend
   const [producto, setProducto] = useState(null);
   const [cantidad, setCantidad] = useState(1);
 
   useEffect(() => {
-    // Llamada al backend para obtener el producto según el id de la URL
     getProductosById(id)
-      .then((data) => {
-        setProducto(data);
-      })
-      .catch((error) => {
-        console.error('Error al obtener el producto:', error);
-      });
+      .then((data) => setProducto(data))
+      .catch((error) => console.error(error));
   }, [id]);
 
-  // Si aún no se ha cargado el producto, muestra un mensaje o un loader
   if (!producto) {
     return (
       <Container className={classes.containermt}>
@@ -104,18 +97,21 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
   }
 
   const handleCantidadChange = (e) => {
-    const value = parseInt(e.target.value) || 1;
-    // Aquí usamos producto.stock en lugar de producto.unidades, ya que en el JSON se llama stock
+    const value = parseInt(e.target.value, 10) || 1;
     setCantidad(Math.min(Math.max(value, 1), producto.stock));
   };
 
   const handleAgregarProducto = () => {
-    if (agregarAlCarrito) {
-      agregarAlCarrito({ ...producto, cantidad });
-      navigate('/carritoCompras');
-    } else {
-      alert(`${cantidad} unidades de ${producto.nombre} agregadas al carrito.`);
-    }
+    // Aquí incluimos explícitamente el id como llave
+    agregarAlCarrito({
+      id: producto.id,
+      nombre: producto.nombre,
+      precio: producto.precio,
+      imagen: producto.imagen,
+      stock: producto.stock,
+      cantidad
+    });
+    navigate('/carritoCompras');
   };
 
   return (
@@ -123,7 +119,6 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
       <Typography variant="h3" className={classes.text_title}>
         {producto.nombre}
       </Typography>
-      
       <Grid container spacing={4}>
         <Grid item lg={6} md={6} xs={12}>
           <Paper elevation={3} className={classes.img_container}>
@@ -134,39 +129,16 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
             />
           </Paper>
         </Grid>
-
         <Grid item lg={6} md={6} xs={12}>
           <Box className={classes.details_container}>
             <Typography variant="h4" className={classes.price_text}>
               ${producto.precio}
             </Typography>
-            
             <Typography variant="body1" paragraph>
               <span className={classes.text_bold}>Descripción:</span> 
               {producto.descripcion}
             </Typography>
-            
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Typography variant="body1">
-                  <span className={classes.text_bold}>Disponibles:</span> 
-                  {producto.stock} unidades
-                </Typography>
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body1">
-                  <span className={classes.text_bold}>Marca:</span> 
-                  {producto.marcaNombre}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="body1">
-                  <span className={classes.text_bold}>Categoría:</span> 
-                  {producto.categoriaNombre}
-                </Typography>
-              </Grid>
-            </Grid>
-
+            {/* ... resto de detalles ... */}
             <Box className={classes.quantity_container}>
               <Typography variant="h6" className={classes.text_bold}>
                 Cantidad:
@@ -187,7 +159,6 @@ const DetalleProducto = ({ agregarAlCarrito }) => {
                 }}
               />
             </Box>
-
             <Button
               onClick={handleAgregarProducto}
               variant="contained"

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// App.jsx
+import React, { useEffect , useState } from 'react';
 import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import theme from './theme/theme';
@@ -18,15 +19,33 @@ import ListaProductos from './componentes/pantallas/admin/ListaProductos';
 import AgregarProducto from './componentes/pantallas/admin/AgregarProducto';
 import EditarProducto from './componentes/pantallas/admin/EditarProducto';
 import ListaPedidos from './componentes/pantallas/admin/ListaPedidos';
-function App() {
-  const [carrito, setCarrito] = useState([]);
+import { getUsuario } from './actions/UsuarioActions';
 
+function App() {
+  // Estado para el carrito de compras
+
+  const [carrito, setCarrito] = useState([]);
+  const [servidorRespuesta, setServidorRespuesta] = useState(false);
+
+  useEffect(()=> {
+    getUsuario().then((response) => {
+      if (response) {
+        setServidorRespuesta(true);
+      }
+    }).catch((error) => {
+      console.error('Error al obtener el usuario:', error);
+    });
+  })
+
+
+
+  // 1) Agregar al carrito: ahora con id
   const agregarAlCarrito = (producto) => {
     setCarrito(prev => {
-      const existe = prev.find(item => item.key === producto.key);
+      const existe = prev.find(item => item.id === producto.id);
       if (existe) {
         return prev.map(item =>
-          item.key === producto.key
+          item.id === producto.id
             ? { ...item, cantidad: item.cantidad + producto.cantidad }
             : item
         );
@@ -35,16 +54,20 @@ function App() {
     });
   };
 
-  const actualizarCantidad = (key, nuevaCantidad) => {
+  // 2) Actualizar cantidad por id
+  const actualizarCantidad = (id, nuevaCantidad) => {
     setCarrito(prev =>
       prev.map(item =>
-        item.key === key ? { ...item, cantidad: nuevaCantidad } : item
+        item.id === id
+          ? { ...item, cantidad: nuevaCantidad }
+          : item
       )
     );
   };
 
-  const eliminarProducto = (key) => {
-    setCarrito(prev => prev.filter(item => item.key !== key));
+  // 3) Eliminar producto por id
+  const eliminarProducto = (id) => {
+    setCarrito(prev => prev.filter(item => item.id !== id));
   };
 
   return (
@@ -59,32 +82,41 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<RegistrarUsuario />} />
             <Route path="/productos" element={<Productos />} />
-            <Route path="/menuCliente" element= {<MenuCliente/>} />
-            {/* Se pasa el carrito como prop para que ProcesoCompra siempre tenga acceso */}
-            <Route path="/procesoCompra" element={<ProcesoCompra carrito={carrito} />} />  
-            <Route path="/usuarios" element={<Usuarios />} />
-            <Route path="/editarUsuario/:id" element={<EditarUsuario />} /> 
-            <Route path="/listaProductos" element={<ListaProductos />} />
-            <Route path = "/agregarProducto" element={<AgregarProducto/>} />
-            <Route path="/editarProducto/:key" element={<EditarProducto />} />
-            <Route path="/listaPedidos" element={<ListaPedidos />} />
-            <Route 
-              path="/detalleProducto/:id" 
-              element={<DetalleProducto agregarAlCarrito={agregarAlCarrito} />} 
-            />
-            <Route 
-              path="/carritoCompras" 
+            <Route path="/menuCliente" element={<MenuCliente />} />
+
+            <Route
+              path="/detalleProducto/:id"
               element={
-                <CarritoCompras 
+                <DetalleProducto
+                  agregarAlCarrito={agregarAlCarrito}
+                />
+              }
+            />
+
+            <Route
+              path="/carritoCompras"
+              element={
+                <CarritoCompras
                   carrito={carrito}
                   actualizarCantidad={actualizarCantidad}
                   eliminarProducto={eliminarProducto}
                 />
-              } 
+              }
             />
-            {/* Se pasa el carrito como prop para que OrdenCompra siempre tenga acceso */}
+
+            <Route
+              path="/procesoCompra"
+              element={<ProcesoCompra carrito={carrito} />}
+            />
+
             <Route path="/ordenCompra/:id" element={<OrdenCompra />} />
-            <Route path="/perfil" element={<Perfil/>} />
+            <Route path="/perfil" element={<Perfil />} />
+            <Route path="/usuarios" element={<Usuarios />} />
+            <Route path="/editarUsuario/:id" element={<EditarUsuario />} />
+            <Route path="/listaProductos" element={<ListaProductos />} />
+            <Route path="/agregarProducto" element={<AgregarProducto />} />
+            <Route path="/editarProducto/:key" element={<EditarProducto />} />
+            <Route path="/listaPedidos" element={<ListaPedidos />} />
 
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
@@ -95,4 +127,3 @@ function App() {
 }
 
 export default App;
-
