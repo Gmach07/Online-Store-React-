@@ -1,6 +1,5 @@
 // src/pages/Login.jsx
-
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -20,17 +19,25 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { SessionContext } from '../context/SessionContext';
-import { loginUsuario } from '../actions/UsuarioActions';
+import { useStateValue } from '../../contexto/store.jsx'; // Hook personalizado
+import { loginUsuario } from '../../actions/UsuarioActions';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { dispatch } = useContext(SessionContext);
+  const [state, dispatch] = useStateValue(); // Consumir contexto como [state, dispatch]
+  const isAuthenticated = state.auth?.isAuthenticated;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Redirige si ya está autenticado (por si entra directamente estando logueado)
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/productos');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,10 +45,12 @@ const Login = () => {
     setOpenDialog(false);
 
     try {
+      // Intentamos el login y esperamos que dispatch actualice el estado
       await loginUsuario({ email, password }, dispatch);
+      // Tras login exitoso, forzamos navegación
       navigate('/productos');
     } catch (err) {
-      setErrorMsg(typeof err === 'string' ? err : 'Usuario o contraseña incorrecta');
+      setErrorMsg(err.message || 'Usuario o contraseña incorrecta');
       setOpenDialog(true);
     }
   };
@@ -76,6 +85,7 @@ const Login = () => {
               variant="filled"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              inputProps={{ 'data-testid': 'email-input' }}
             />
             <TextField
               margin="normal"
@@ -89,6 +99,7 @@ const Login = () => {
               variant="filled"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              inputProps={{ 'data-testid': 'password-input' }}
             />
             <Button
               type="submit"
@@ -96,6 +107,7 @@ const Login = () => {
               variant="contained"
               sx={{ mt: 3, mb: 2, py: 1.5 }}
               size="large"
+              data-testid="login-button"
             >
               INGRESAR
             </Button>
@@ -120,20 +132,24 @@ const Login = () => {
         </Card>
       </Box>
 
+      {/* Diálogo de error */}
       <Dialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         aria-labelledby="error-dialog-title"
-        aria-describedby="error-dialog-description"
       >
         <DialogTitle id="error-dialog-title">Error de Autenticación</DialogTitle>
         <DialogContent>
-          <DialogContentText id="error-dialog-description">
+          <DialogContentText>
             {errorMsg}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} autoFocus>
+          <Button 
+            onClick={() => setOpenDialog(false)} 
+            color="primary"
+            autoFocus
+          >
             Cerrar
           </Button>
         </DialogActions>

@@ -1,47 +1,40 @@
-// src/components/MenuCliente.jsx
-
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Avatar,
-  Button,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
+  Avatar, Button, Menu, MenuItem,
+  ListItemIcon, ListItemText, Typography, Box
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import PersonIcon from '@mui/icons-material/Person';
-import LogoutIcon from '@mui/icons-material/Logout';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { SessionContext } from '../context/SessionContext';
-import { logoutUsuario } from '../actions/UsuarioActions';
+import {
+  ShoppingCart as ShoppingCartIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon
+} from '@mui/icons-material';
+import { useStateValue } from '../../../contexto/store.jsx';
 
 const MenuCliente = () => {
-  const { state, dispatch } = useContext(SessionContext);
-  const { usuario, isAuthenticated } = state.sesionUsuario;
-  const navigate = useNavigate();
+  const [{ sesionUsuario }, dispatch] = useStateValue();
+  const { isAuthenticated, usuario } = sesionUsuario;
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
 
-  const handleOpenMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
+  useEffect(() => {
+    console.log('🔍 [MenuCliente] isAuthenticated=', isAuthenticated, ' usuario=', usuario);
+  }, [isAuthenticated, usuario]);
 
+  if (!isAuthenticated) return null; // o un pequeño placeholder
+
+  const handleOpenMenu = e => setAnchorEl(e.currentTarget);
+  const handleCloseMenu = () => setAnchorEl(null);
   const handleLogout = () => {
-    // Ejecuta acción de logout
-    logoutUsuario(dispatch);
+    dispatch({ type: 'LOGOUT' });
+    localStorage.removeItem('token');
     handleCloseMenu();
-    // Redirige al login o home
     navigate('/login');
   };
 
-  // Si no está autenticado, no mostramos el menú
-  if (!isAuthenticated) return null;
+  const nombre = usuario?.username ?? 'Usuario';
+  const foto   = usuario?.imagenPerfil || usuario?.imagen || '';
 
   return (
     <>
@@ -50,14 +43,10 @@ const MenuCliente = () => {
         onClick={handleOpenMenu}
         sx={{ display: 'flex', alignItems: 'center', textTransform: 'none' }}
       >
-        <Avatar
-          src={usuario.imagen || usuario.imagenPerfil}
-          alt={usuario.nombre}
-          sx={{ width: 32, height: 32, mr: 1 }}
-        />
-        <Typography variant="body1" sx={{ mr: 0.5 }}>
-          {usuario.nombre}
-        </Typography>
+        <Avatar src={foto} alt={nombre} sx={{ width: 32, height: 32, mr: 1 }}>
+          {nombre?.[0] ?? '❓'}
+        </Avatar>
+        <Typography variant="body1" sx={{ mr: 0.5 }}>{nombre}</Typography>
         <KeyboardArrowDownIcon />
       </Button>
 
@@ -66,34 +55,18 @@ const MenuCliente = () => {
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top',    horizontal: 'right' }}
       >
-        <MenuItem
-          component={Link}
-          to="/misPedidos"
-          onClick={handleCloseMenu}
-        >
-          <ListItemIcon>
-            <ShoppingCartIcon fontSize="small" />
-          </ListItemIcon>
+        <MenuItem component={Link} to="/misPedidos" onClick={handleCloseMenu}>
+          <ListItemIcon><ShoppingCartIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Mis Pedidos" />
         </MenuItem>
-
-        <MenuItem
-          component={Link}
-          to="/perfil"
-          onClick={handleCloseMenu}
-        >
-          <ListItemIcon>
-            <PersonIcon fontSize="small" />
-          </ListItemIcon>
+        <MenuItem component={Link} to="/perfil" onClick={handleCloseMenu}>
+          <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Perfil" />
         </MenuItem>
-
         <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" />
-          </ListItemIcon>
+          <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Cerrar Sesión" />
         </MenuItem>
       </Menu>
