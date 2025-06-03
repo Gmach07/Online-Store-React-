@@ -8,8 +8,7 @@ import { getProductosById } from '../../actions/ProductoActions';
 const DetalleProducto = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [{ sesionCarrito }, dispatch] = useStateValue();
-
+  const [{ sesionCarrito, sesionUsuario }, dispatch] = useStateValue();
   const [producto, setProducto] = useState(null);
   const [cantidad, setCantidad] = useState(1);
 
@@ -33,6 +32,11 @@ const DetalleProducto = () => {
       items = [...sesionCarrito.items, { id:producto.id, nombre:producto.nombre, precio:producto.precio, imagen:producto.imagen, stock:producto.stock, cantidad }];
     }
     dispatch({ type:'CARRITO_ITEMS', items });
+    // Guardar en localStorage para carrito anónimo
+    if (!sesionUsuario?.usuario?.id) {
+      const anonId = localStorage.getItem('carritoId');
+      localStorage.setItem(`carritoItems_${anonId}`, JSON.stringify(items));
+    }
     navigate('/carritoCompras');
   };
 
