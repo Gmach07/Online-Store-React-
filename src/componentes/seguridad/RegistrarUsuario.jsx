@@ -1,4 +1,4 @@
-// src/components/RegistrarUsuario.js
+// src/components/RegistrarUsuario.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -11,20 +11,22 @@ import {
   CssBaseline
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { registrarUsuario } from '../../actions/UsuarioActions';
+import { useStateValue } from '../../contexto/store';
 
-// Campos iniciales para el formulario
 const clearUsuario = {
   nombre: '',
   apellido: '',
   username: '',
   email: '',
-  password: ''
+  password: '',
 };
 
 const RegistrarUsuario = () => {
   const [usuario, setUsuario] = useState(clearUsuario);
+  const navigate = useNavigate();
+  const [, dispatch] = useStateValue(); // ✅ Obtiene el dispatch global
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,23 +40,15 @@ const RegistrarUsuario = () => {
     e.preventDefault();
     try {
       console.log('🏹 Payload enviado:', usuario);
-      const data = await registrarUsuario(usuario);
-      console.log('✅ Usuario registrado:', data);
+      const data = await registrarUsuario(usuario, dispatch); // ✅ Pasamos el dispatch
+      console.log('✅ Usuario registrado y logueado:', data);
 
-      // Guarda el token en localStorage
-      window.localStorage.setItem('token', data.token);
-
-      // Limpia el formulario
-      setUsuario(clearUsuario);
-      // Redirige al home después del registro exitoso
+      // Redirige al home directamente
       navigate('/productos');
+
     } catch (error) {
       console.error('💥 Error al registrar usuario:', error);
-      if (error.response) {
-        console.error('💥 error.response.data:', error.response.data);
-      } else {
-        console.error('💥 error:', error.message);
-      }
+      alert('Error al registrar usuario: ' + error);
     }
   };
 
@@ -147,3 +141,5 @@ const RegistrarUsuario = () => {
 };
 
 export default RegistrarUsuario;
+
+

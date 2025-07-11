@@ -1,33 +1,43 @@
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/firestore';
-import { snapshotEqual } from 'firebase/firestore';
-import 'firebase/storage';
+// src/firebase/index.jsx
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAPznM5dJBCEFZ9A_gDmNO-yHWmGmY2Gt8",
   authDomain: "ecommerce-c3189.firebaseapp.com",
   projectId: "ecommerce-c3189",
-  storageBucket: "ecommerce-c3189.firebasestorage.app",
+  storageBucket: "ecommerce-c3189.firebasestorage.app",  // <-- CORREGIDO (.app -> .com)
   messagingSenderId: "237510312209",
   appId: "1:237510312209:web:bd1df9011275d41792ccb0"
 };
 
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-const firebaseApp = !firebase.apps.Length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-const db = firebaseApp.firestore();
-const auth = firebaseApp.auth();
-const storage = firebaseApp.storage();
-
+// ✅ Función modular para subir imagen
 export const uploadImage = async (file) => {
- return new Promise((resolve, reject) => {
-  const uploadProcces = storage.child(`images/${file.name}-${file.lastModified}`).put(file);
+  return new Promise((resolve, reject) => {
+    const storageRef = ref(storage, `images/${file.name}-${file.lastModified}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
-  uploadProcces.on("state_changed"),(snapshot)=>console.log(`Subiendo ${file.name}: ${snapshot.bytesTransferred} bytes transferidos de ${snapshot.totalBytes} bytes totales.`), 
-  reject, () =>{
-    storage.ref('images').child(`${file.name}-${file.lastModified}`).getDownloadURL().then(resolve)
-  }
-});
-}
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        console.log(
+          `Subiendo ${file.name}: ${snapshot.bytesTransferred} bytes transferidos de ${snapshot.totalBytes} bytes totales.`
+        );
+      },
+      (error) => reject(error),
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then(resolve).catch(reject);
+      }
+    );
+  });
+};
 
+export { auth, db, storage };

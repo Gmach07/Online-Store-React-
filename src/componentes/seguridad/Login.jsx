@@ -50,8 +50,10 @@ const Login = () => {
       // Tras login exitoso, forzamos navegación
       navigate('/productos');
     } catch (err) {
-      setErrorMsg(err.message || 'Usuario o contraseña incorrecta');
-      setOpenDialog(true);
+      //setErrorMsg(err.message || 'Usuario o contraseña incorrecta');
+      //setOpenDialog(true);
+      dispatch({ type: 'OPEN_SNACKBAR', payload: { mensaje: 'Error al iniciar sesión' } });
+      console.error('Error al iniciar sesión:', err);
     }
   };
 

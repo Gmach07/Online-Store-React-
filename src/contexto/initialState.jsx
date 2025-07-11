@@ -1,6 +1,7 @@
 export const initialState = {
   // Estado de sesión de usuario (auth)
   usuario: {
+    id: '',
     nombre: '',
     email: '',
     username: '',

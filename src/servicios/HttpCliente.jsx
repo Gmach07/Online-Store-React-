@@ -15,8 +15,10 @@ HttpCliente.interceptors.request.use(
   (config) => {
     // Agregar el token de autorización a la cabecera de la solicitud
     const token = localStorage.getItem('token');
+    console.log('👉 Interceptor token:', token);
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
+      console.log('👉 Interceptor token:', token);
     }
     return config;
   },
