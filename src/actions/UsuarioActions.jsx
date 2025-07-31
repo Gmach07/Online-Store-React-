@@ -1,4 +1,4 @@
-// src/actions/UsuarioActions.js
+// Proyecto-Curso-React-/src/actions/UsuarioActions.js
 import HttpCliente from '../servicios/HttpCliente';
 
 // Registra un nuevo usuario
@@ -27,10 +27,6 @@ export async function registrarUsuario(usuarioData, dispatch) {
       imagen: data.imagen || '',
       admin: data.admin || false,
     };
-
-    // NO GUARDAR EL OBJETO USUARIO COMPLETO EN LOCALSTORAGE DIRECTAMENTE.
-    // El token es suficiente para la persistencia, y getUsuario debe traer los datos frescos.
-    // localStorage.setItem('usuario', JSON.stringify(usuarioPayload)); // <-- ELIMINADO
 
     if (dispatch) {
       dispatch({
@@ -62,22 +58,15 @@ export async function loginUsuario(credentials, dispatch) {
     console.log('[loginUsuario] data cruda =', data);
 
     if (data.token) {
-      // ✅ AQUÍ GUARDA el token
       localStorage.setItem('token', data.token);
     } else {
       console.warn('[loginUsuario] no llegó token en la respuesta');
     }
 
-    // ✅ AQUÍ extrae el usuario (ajusta según tu API)
     const usuario = data.usuario || data.user || data;
 
     console.log('[loginUsuario] usuario extraído =', usuario);
 
-    // NO GUARDAR EL OBJETO USUARIO COMPLETO EN LOCALSTORAGE DIRECTAMENTE.
-    // El token es suficiente para la persistencia, y getUsuario debe traer los datos frescos.
-    // localStorage.setItem('usuario', JSON.stringify(usuario)); // <-- ELIMINADO
-
-    // Despacha al reducer/contexto
     dispatch({ type: 'LOGIN', payload: { usuario } });
     return usuario;
   } catch (error) {
@@ -91,21 +80,17 @@ export async function loginUsuario(credentials, dispatch) {
   }
 }
 
-// src/actions/UsuarioActions.js
 export async function actualizarPerfilUsuario(datos, dispatch) {
   dispatch({ type: 'CARGANDO' });
   try {
     const { data } = await HttpCliente.put(`/Usuario/actualizar/${datos.id}`, datos);
 
-    // Si tu API devuelve un nuevo token al actualizar (no es común, pero si lo hace, guárdalo)
     if (data.token) {
       localStorage.setItem("token", data.token);
     }
 
-    // El usuario actualizado debería venir en la respuesta
     const usuarioActualizado = data.usuario || data;
 
-    // Despacha la acción LOGIN con el usuario actualizado para reflejar los cambios en el estado global
     dispatch({
       type: 'LOGIN',
       payload: { usuario: usuarioActualizado }
@@ -126,13 +111,11 @@ export async function actualizarPerfilUsuario(datos, dispatch) {
 // Action creator de logout
 export function logoutUsuario(dispatch) {
   localStorage.removeItem('token');
-  // También limpia el usuario de localStorage si se estaba guardando (aunque ya lo eliminamos arriba)
-  localStorage.removeItem('usuario');
   dispatch({ type: 'LOGOUT' });
 }
 
 // Obtiene el usuario actualmente autenticado y lo despacha al store
-export const getUsuario = async (dispatch) => { // AHORA ACEPTA 'dispatch'
+export const getUsuario = async (dispatch) => { // Asegurado que acepta 'dispatch'
   try {
     const { data } = await HttpCliente.get('/Usuario');
     console.log('[getUsuario] data cruda =', data);
@@ -142,29 +125,64 @@ export const getUsuario = async (dispatch) => { // AHORA ACEPTA 'dispatch'
       usuario = data.usuario;
     } else if (data.user) {
       usuario = data.user;
-    } else if (typeof data.username !== 'undefined' && data.id) { // Asegurarse de que sea un objeto usuario válido
+    } else if (typeof data.username !== 'undefined' && data.id) {
       usuario = data;
     }
 
     if (usuario && dispatch) {
-      // Si se encuentra un usuario válido, despacha la acción LOGIN
       dispatch({ type: 'LOGIN', payload: { usuario } });
     } else if (dispatch) {
       // Si no se encuentra usuario (pero no es un 401), asegúrate de que la sesión esté limpia
       localStorage.removeItem('token');
-      localStorage.removeItem('usuario'); // Por si acaso
       dispatch({ type: 'LOGOUT' });
     }
     return usuario;
   } catch (error) {
-    // Si la API devuelve un 401 (No autorizado), limpia el token y despacha LOGOUT
     if (error.response?.status === 401 && dispatch) {
       localStorage.removeItem('token');
-      localStorage.removeItem('usuario'); // Por si acaso
       dispatch({ type: 'LOGOUT' });
-      return null; // Devuelve null para indicar que no hay usuario
+      return null;
     }
     console.error('Error en getUsuario:', error);
-    throw error; // Relanza el error para que pueda ser manejado por el llamador si es necesario
+    throw error;
   }
+};
+
+export const getUsuarioById = async (id) => {
+  try {
+    const response = await HttpCliente.get(`/Usuario/account/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response || error;
+  }
+};
+
+export const agregarRole = async (id, status) => {
+  try {
+    const response = await HttpCliente.put(`/Usuario/role/${id}`, {
+      nombre: "Admin",     // 👈 este valor es obligatorio en el backend
+      status: status       // 👈 debe ser booleano
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error en agregarRole:", error);
+    throw error.response?.data || error;
+  }
+};
+
+export const getUsuarios = (request) => {
+  return new Promise((resolve, reject) => { // Se usa reject en lugar de resolver en el catch para manejar errores
+    HttpCliente.get(`/Usuario/paginacion?pageIndex=${request.pageIndex}&pageSize=${request.pageSize}`)
+      .then(response => {
+        // Si la petición es exitosa, se resuelve la promesa con los datos de la respuesta.
+        resolve(response);
+      })
+      .catch(error => {
+        // Si hay un error en la petición, se rechaza la promesa con el objeto de error.
+        // Es común resolver con error.response si quieres manejar respuestas de error HTTP específicas.
+        // Si quieres que el error se propague como una excepción, usa reject(error);
+        console.error("Error al obtener usuarios:", error);
+        reject(error.response || error); // Rechaza con la respuesta de error o el error completo
+      });
+  });
 };

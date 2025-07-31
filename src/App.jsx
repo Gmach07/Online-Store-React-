@@ -1,6 +1,6 @@
-// src/App.jsx
+// Proyecto-Curso-React-/src/App.jsx
 import React, { useEffect, useState } from 'react';
-import { ThemeProvider, CssBaseline, Box, Snackbar, Typography } from '@mui/material'; // <-- Añadido Typography aquí
+import { ThemeProvider, CssBaseline, Box, Snackbar, Typography } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import theme from './theme/theme';
 import MenuAppBar from './componentes/navegacion/MenuAppBar';
@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 function App() {
   const [{ sesionUsuario, openSnackbar }, dispatch] = useStateValue();
-  const [loading, setLoading] = useState(true); // Estado para controlar la carga inicial
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -32,20 +32,17 @@ function App() {
     const fetchAndSetUser = async () => {
       if (token) {
         try {
-          // Llama a getUsuario y pásale dispatch.
-          // getUsuario ahora es responsable de despachar LOGIN o LOGOUT.
+          // getUsuario ahora es responsable de despachar LOGIN o LOGOUT
           await getUsuario(dispatch);
         } catch (e) {
           console.error("Error al cargar usuario desde token en App.jsx:", e);
-          // Si hay un error (ej. token inválido), getUsuario ya debería haber limpiado el token
-          // y despachado LOGOUT. Aquí solo aseguramos que el loading termine.
+          // getUsuario ya debería haber limpiado el token y despachado LOGOUT
         }
       } else {
-        // Si no hay token, no hay usuario para cargar, simplemente terminamos el loading
-        // y nos aseguramos de que el estado de sesión esté limpio (LOGOUT).
+        // Si no hay token, asegurar que el estado de sesión esté limpio
         dispatch({ type: 'LOGOUT' });
       }
-      setLoading(false); // Una vez que se intenta cargar el usuario (o se determina que no hay), el loading termina
+      setLoading(false);
     };
 
     fetchAndSetUser();
@@ -71,9 +68,8 @@ function App() {
         console.error("Error parseando ítems de carrito en localStorage", e);
       }
     }
-  }, [dispatch]); // La dependencia 'dispatch' es importante si el dispatch cambia (aunque es raro)
+  }, [dispatch]);
 
-  // Muestra un indicador de carga mientras se verifica la sesión del usuario
   if (loading) {
     return (
       <Box
@@ -107,7 +103,6 @@ function App() {
         <Box>
           <MenuAppBar />
           <Routes>
-            {/* Redirección inicial basada en el estado de autenticación */}
             <Route
               path="/"
               element={
@@ -128,7 +123,7 @@ function App() {
             <Route path="/agregarProducto" element={<AgregarProducto />} />
             <Route path="/editarProducto/:key" element={<EditarProducto />} />
             <Route path="/listaPedidos" element={<ListaPedidos />} />
-            <Route path="*" element={<Navigate to="/login" replace />} /> {/* Ruta comodín para cualquier otra URL */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Box>
       </Router>

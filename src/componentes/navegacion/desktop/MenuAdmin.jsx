@@ -8,18 +8,23 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-// Íconos de Material UI (ajusta según tus necesidades)
+// Íconos de Material UI
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import GroupIcon from '@mui/icons-material/Group';
-import ReceiptIcon from '@mui/icons-material/Receipt'; // Nuevo ícono para ListaPedidos
+import ReceiptIcon from '@mui/icons-material/Receipt';
 import LogoutIcon from '@mui/icons-material/Logout';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import PersonIcon from '@mui/icons-material/Person';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
-const MenuAdmin = ({ usuario }) => {
+const MenuAdmin = ({ usuario: propUsuario, onLogout }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
+
+  const currentUser = propUsuario;
 
   const handleOpenMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -30,31 +35,39 @@ const MenuAdmin = ({ usuario }) => {
   };
 
   const handleLogout = () => {
-    // Aquí iría tu lógica de cierre de sesión
-    console.log('Cerrando sesión...');
+    if (onLogout) {
+      onLogout();
+    } else {
+      console.log('Cerrando sesión del administrador (lógica por defecto)...');
+      localStorage.removeItem('token');
+      navigate('/login');
+    }
     handleCloseMenu();
   };
 
+  const nombre = currentUser?.username || currentUser?.nombre || 'Administrador';
+  const foto = currentUser?.imagenPerfil || currentUser?.imagen || '';
+
   return (
     <>
-      {/* Botón que muestra Avatar + Nombre y abre el menú */}
       <Button
         color="inherit"
         onClick={handleOpenMenu}
         sx={{ display: 'flex', alignItems: 'center', textTransform: 'none' }}
       >
         <Avatar
-          src={usuario?.imagenPerfil}
-          alt="Avatar"
+          src={foto}
+          alt={nombre}
           sx={{ width: 32, height: 32, marginRight: 1 }}
-        />
+        >
+          {nombre?.[0] || '❓'}
+        </Avatar>
         <Typography variant="body1" sx={{ marginRight: 1 }}>
-          {usuario?.nombre || 'Admin'}
+          {nombre}
         </Typography>
         <KeyboardArrowDownIcon />
       </Button>
 
-      {/* Menú desplegable */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -62,7 +75,7 @@ const MenuAdmin = ({ usuario }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {/* Opción: Dashboard */}
+        {/* ¡¡¡IMPORTANTE!!! Eliminar la prop 'button' de MenuItem si estaba presente */}
         <MenuItem
           component={Link}
           to="/admin/dashboard"
@@ -74,34 +87,31 @@ const MenuAdmin = ({ usuario }) => {
           <ListItemText primary="Dashboard" />
         </MenuItem>
 
-        {/* Opción: Administrar Productos */}
         <MenuItem
           component={Link}
-          to="/admin/productos"
+          to="/listaProductos"
           onClick={handleCloseMenu}
         >
           <ListItemIcon>
             <StorefrontIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Productos" />
+          <ListItemText primary="Gestionar Productos" />
         </MenuItem>
 
-        {/* Opción: Administrar Usuarios */}
         <MenuItem
           component={Link}
-          to="/admin/usuarios"
+          to="/usuarios"
           onClick={handleCloseMenu}
         >
           <ListItemIcon>
             <GroupIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary="Usuarios" />
+          <ListItemText primary="Gestionar Usuarios" />
         </MenuItem>
 
-        {/* Nueva opción: Lista de Pedidos */}
         <MenuItem
           component={Link}
-          to="/admin/listaPedidos"
+          to="/listaPedidos"
           onClick={handleCloseMenu}
         >
           <ListItemIcon>
@@ -110,7 +120,18 @@ const MenuAdmin = ({ usuario }) => {
           <ListItemText primary="Lista de Pedidos" />
         </MenuItem>
 
-        {/* Opción: Cerrar Sesión */}
+        {/* Opciones de cliente que un admin también podría necesitar (descomenta si aplica) */}
+        {/*
+        <MenuItem component={Link} to="/misPedidos" onClick={handleCloseMenu}>
+          <ListItemIcon><ShoppingCartIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="Mis Pedidos" />
+        </MenuItem>
+        <MenuItem component={Link} to="/perfil" onClick={handleCloseMenu}>
+          <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+          <ListItemText primary="Perfil" />
+        </MenuItem>
+        */}
+
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
@@ -123,4 +144,3 @@ const MenuAdmin = ({ usuario }) => {
 };
 
 export default MenuAdmin;
-

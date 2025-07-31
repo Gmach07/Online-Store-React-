@@ -1,4 +1,4 @@
-// src/components/RegistrarUsuario.jsx
+// Proyecto-Curso-React-/src/components/seguridad/RegistrarUsuario.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -26,7 +26,7 @@ const clearUsuario = {
 const RegistrarUsuario = () => {
   const [usuario, setUsuario] = useState(clearUsuario);
   const navigate = useNavigate();
-  const [, dispatch] = useStateValue(); // ✅ Obtiene el dispatch global
+  const [, dispatch] = useStateValue();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,15 +40,29 @@ const RegistrarUsuario = () => {
     e.preventDefault();
     try {
       console.log('🏹 Payload enviado:', usuario);
-      const data = await registrarUsuario(usuario, dispatch); // ✅ Pasamos el dispatch
-      console.log('✅ Usuario registrado y logueado:', data);
+      const data = await registrarUsuario(usuario, dispatch); // Pasa dispatch
+      console.log('✅ Usuario registrado:', data);
 
-      // Redirige al home directamente
+      setUsuario(clearUsuario);
+      dispatch({
+        type: 'OPEN_SNACKBAR',
+        payload: { open: true, mensaje: '¡Registro exitoso! Bienvenido.' },
+      });
       navigate('/productos');
-
     } catch (error) {
       console.error('💥 Error al registrar usuario:', error);
-      alert('Error al registrar usuario: ' + error);
+      if (error.response) {
+        console.error('💥 error.response.data:', error.response.data);
+      } else {
+        console.error('💥 error:', error.message);
+      }
+      dispatch({
+        type: 'OPEN_SNACKBAR',
+        payload: {
+          open: true,
+          mensaje: `Error al registrar: ${error.message || error}`,
+        },
+      });
     }
   };
 
@@ -62,7 +76,7 @@ const RegistrarUsuario = () => {
         backgroundColor: (theme) =>
           theme.palette.mode === 'light'
             ? theme.palette.grey[100]
-            : theme.palette.background.default
+            : theme.palette.background.default,
       }}
     >
       <CssBaseline />
@@ -77,31 +91,45 @@ const RegistrarUsuario = () => {
           '&:hover': { transform: 'scale(1.02)' }
         }}
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mb: 4,
+          }}
+        >
           <Avatar sx={{ m: 1, bgcolor: 'primary.main', width: 56, height: 56 }}>
             <LockOutlinedIcon fontSize="medium" />
           </Avatar>
-          <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+          <Typography
+            component="h1"
+            variant="h5"
+            sx={{ fontWeight: 'bold', color: 'primary.main' }}
+          >
             Crear Cuenta
           </Typography>
         </Box>
-
-        <Box component="form" onSubmit={guardarUsuario} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Box
+          component="form"
+          onSubmit={guardarUsuario}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}
+        >
           {['nombre', 'apellido', 'username', 'email', 'password'].map((field) => (
             <TextField
               key={field}
               label={
-                field === 'nombre' ? 'Nombre' :
-                field === 'apellido' ? 'Apellido' :
-                field === 'username' ? 'Username' :
-                field === 'email' ? 'Correo Electrónico' :
-                'Contraseña'
+                field === 'nombre'
+                  ? 'Nombre'
+                  : field === 'apellido'
+                  ? 'Apellido'
+                  : field === 'username'
+                  ? 'Username'
+                  : field === 'email'
+                  ? 'Correo Electrónico'
+                  : 'Contraseña'
               }
-              type={
-                field === 'email' ? 'email' :
-                field === 'password' ? 'password' :
-                'text'
-              }
+              type={field === 'email' ? 'email' : field === 'password' ? 'password' : 'text'}
               variant="filled"
               name={field}
               value={usuario[field]}
@@ -110,15 +138,12 @@ const RegistrarUsuario = () => {
               required
               {...(field === 'nombre' ? { autoFocus: true } : {})}
               autoComplete={
-                field === 'password' ? 'new-password' :
-                field === 'email' ? 'email' :
-                undefined
+                field === 'password' ? 'new-password' : field === 'email' ? 'email' : undefined
               }
               InputProps={{ disableUnderline: true }}
               sx={{ '& .MuiFilledInput-root': { borderRadius: 1, backgroundColor: 'action.hover' } }}
             />
           ))}
-
           <Button
             variant="contained"
             fullWidth
@@ -128,8 +153,13 @@ const RegistrarUsuario = () => {
           >
             Registrarse
           </Button>
-
-          <Box sx={{ textAlign: 'center', mt: 2, '& a': { textDecoration: 'none', '&:hover': { textDecoration: 'underline' } } }}>
+          <Box
+            sx={{
+              textAlign: 'center',
+              mt: 2,
+              '& a': { textDecoration: 'none', '&:hover': { textDecoration: 'underline' } },
+            }}
+          >
             <Link component={RouterLink} to="/login" variant="body2" color="text.secondary">
               ¿Ya tienes cuenta? Inicia Sesión
             </Link>
@@ -141,5 +171,3 @@ const RegistrarUsuario = () => {
 };
 
 export default RegistrarUsuario;
-
-

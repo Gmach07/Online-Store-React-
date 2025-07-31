@@ -20,6 +20,7 @@ export default function sesionUsuarioReducer(state = initialState, action) {
         mensaje: null,
       };
 
+
     case 'LOGOUT':
       return {
         ...initialState,

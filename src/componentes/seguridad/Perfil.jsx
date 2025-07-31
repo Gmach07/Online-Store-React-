@@ -25,13 +25,12 @@ import {
 } from '@mui/icons-material';
 import { useStateValue } from '../../contexto/store';
 import { actualizarPerfilUsuario } from '../../actions/UsuarioActions';
+import { uploadImage } from '../../firebase';
 
 const Perfil = () => {
   const [{ sesionUsuario }, dispatch] = useStateValue();
 
-  // Es crucial asegurar que sesionUsuario.usuario y sesionUsuario.usuario.id estén disponibles
   if (!sesionUsuario?.usuario || !sesionUsuario.usuario.id) {
-    // Podrías mostrar un spinner o un mensaje de error más específico si el ID no está
     return <Typography sx={{ m: 4 }}>Cargando datos de usuario...</Typography>;
   }
 
@@ -42,6 +41,8 @@ const Perfil = () => {
   const [nuevaPass, setNuevaPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenURL, setImagenURL] = useState(sesionUsuario.usuario.imagen || '');
 
   const handleGuardar = async () => {
     if (nuevaPass && nuevaPass !== confirmPass) {
@@ -49,26 +50,40 @@ const Perfil = () => {
       return;
     }
 
+    let urlImagenFinal = sesionUsuario.usuario.imagen || '';
+
+    if (imagenFile) {
+      try {
+        urlImagenFinal = await uploadImage(imagenFile);
+      } catch (error) {
+        console.error('Error subiendo imagen:', error);
+        alert('No se pudo subir la imagen.');
+        return;
+      }
+    }
+
     const datosActualizar = {
-      // **AGREGA EL ID DEL USUARIO AQUÍ**
       id: sesionUsuario.usuario.id,
+      email: sesionUsuario.usuario.email,
       nombre,
       apellido,
       username,
-      password: nuevaPass || undefined
-      // Imagen pendiente
+      password: nuevaPass?.trim() ? nuevaPass.trim() : undefined,
+      imagen: urlImagenFinal
     };
 
     try {
       setGuardando(true);
       await actualizarPerfilUsuario(datosActualizar, dispatch);
       alert('Perfil actualizado correctamente.');
+
+      // Actualizar localmente la imagen
+      setImagenFile(null);
+      setImagenURL(urlImagenFinal);
       setNuevaPass('');
       setConfirmPass('');
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
-      // El error que viene de UsuarioActions.js ya es un mensaje de error
-      // Puedes ajustar esto si quieres un manejo más sofisticado del error
       alert(`Error al actualizar perfil: ${error}`);
     } finally {
       setGuardando(false);
@@ -84,7 +99,7 @@ const Perfil = () => {
               Mi Perfil
             </Typography>
 
-            <Box display="flex" justifyContent="center" mb={3}>
+            <Box display="flex" justifyContent="center" mb={2}>
               <Avatar
                 sx={{
                   width: 120,
@@ -92,8 +107,31 @@ const Perfil = () => {
                   border: '4px solid',
                   borderColor: 'primary.main'
                 }}
-                src={sesionUsuario.usuario.imagen || 'https://i.pravatar.cc/300'}
+                src={imagenURL || 'https://i.pravatar.cc/300'}
               />
+            </Box>
+
+            <Box display="flex" justifyContent="center" mb={3}>
+              <Button
+                variant="outlined"
+                component="label"
+                fullWidth
+                sx={{ mt: 1 }}
+              >
+                Seleccionar Imagen
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImagenFile(e.target.files[0]);
+                      const preview = URL.createObjectURL(e.target.files[0]);
+                      setImagenURL(preview);
+                    }
+                  }}
+                />
+              </Button>
             </Box>
 
             <form>
