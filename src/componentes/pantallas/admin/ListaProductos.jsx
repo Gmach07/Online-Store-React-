@@ -1,87 +1,93 @@
-import React, { useState } from "react";
-import {ProductoArray} from "../../data/dataPruebas";
+import React, { useEffect, useState } from 'react';
 import {
+  Container,
+  Typography,
   Grid,
   Card,
   CardContent,
   CardMedia,
-  Typography,
-  CardActions,
-  Button,
-  Box
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
+  CircularProgress,
+  Button
+} from '@mui/material';
+import { getProductos } from '../../../actions/ProductoActions';
+import { useNavigate } from 'react-router-dom';
 
 const ListaProductos = () => {
-  // Guardamos los productos en el estado local
-  const [productos, setProductos] = useState(ProductoArray);
+  const [productos, setProductos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Función para borrar un producto de la lista
-  const handleDelete = (key) => {
-    setProductos(productos.filter((producto) => producto.key !== key));
+  const cargarProductos = async () => {
+    setLoading(true);
+    try {
+      const res = await getProductos({ PageIndex: 1, PageSize: 20 });
+      setProductos(res.data || []);
+    } catch (error) {
+      console.error('Error al obtener productos:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Función para editar un producto
-  const handleEdit = (producto) => {
-    // Navega a la ruta de edición, por ejemplo, /editarProducto/:key
-    navigate(`/editarProducto/${producto.key}`);
-  };
+  useEffect(() => {
+    cargarProductos();
+  }, []);
+
+  if (loading) {
+    return (
+      <Container sx={{ mt: 4, textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (!productos.length) {
+    return (
+      <Container sx={{ mt: 4, textAlign: 'center' }}>
+        <Typography variant="h5">No hay productos disponibles.</Typography>
+      </Container>
+    );
+  }
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Grid container spacing={2}>
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom textAlign="center">
+        Lista de Productos
+      </Typography>
+      <Grid container spacing={3}>
         {productos.map((producto) => (
-          <Grid item xs={12} sm={6} md={4} key={producto.key}>
+          <Grid item xs={12} sm={6} md={4} key={producto.id}>
             <Card>
               <CardMedia
                 component="img"
-                alt={producto.nombre}
                 height="200"
-                image={producto.imagen}
+                image={producto.imagen || 'https://via.placeholder.com/250'}
+                alt={producto.nombre}
               />
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {producto.nombre}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="h6">{producto.nombre}</Typography>
+                <Typography variant="body2" color="text.secondary">
                   {producto.descripcion}
                 </Typography>
-                <Typography variant="body1" color="textPrimary">
-                  Precio: ${producto.precio}
+                <Typography variant="subtitle1" color="primary">
+                  ${producto.precio}
                 </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Unidades: {producto.unidades}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Marca: {producto.marca}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Temporada: {producto.temporada}
-                </Typography>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="secondary"
+                  sx={{ mt: 2 }}
+                  onClick={() => navigate(`/editarProducto/${producto.id}`)}
+                >
+                  Editar Producto
+                </Button>
               </CardContent>
-              <CardActions>
-                <Button size="small" color="primary" onClick={() => handleEdit(producto)}>
-                  Editar
-                </Button>
-                <Button size="small" color="error" onClick={() => handleDelete(producto.key)}>
-                  Borrar
-                </Button>
-              </CardActions>
             </Card>
           </Grid>
         ))}
       </Grid>
-      {/* Botón para agregar un nuevo producto */}
-      <Box sx={{ textAlign: "center", marginTop: 2 }}>
-        <Button variant="contained" color="primary" onClick={() => navigate("/agregarProducto")}>
-          Agregar Producto
-        </Button>
-      </Box>
-    </Box>
+    </Container>
   );
 };
 
 export default ListaProductos;
-
-

@@ -1,95 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Avatar,
-  Button,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
+  Avatar, Button, Menu, MenuItem,
+  ListItemIcon, ListItemText, Typography, Box
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  ShoppingCart as ShoppingCartIcon,
+  Person as PersonIcon,
+  Logout as LogoutIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon
+} from '@mui/icons-material';
+import { useStateValue } from '../../../contexto/store.jsx';
 
-// Íconos de Material UI (ajusta según tus necesidades)
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import PersonIcon from '@mui/icons-material/Person';
-import LogoutIcon from '@mui/icons-material/Logout';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-
-const MenuCliente = ({ usuario }) => {
+const MenuCliente = () => {
+  const [{ sesionUsuario }, dispatch] = useStateValue();
+  const { isAuthenticated, usuario } = sesionUsuario;
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
 
-  const handleOpenMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
+  useEffect(() => {
+    console.log('🔍 [MenuCliente] isAuthenticated=', isAuthenticated, ' usuario=', usuario);
+  }, [isAuthenticated, usuario]);
 
+  if (!isAuthenticated) return null; // o un pequeño placeholder
+
+  const handleOpenMenu = e => setAnchorEl(e.currentTarget);
+  const handleCloseMenu = () => setAnchorEl(null);
   const handleLogout = () => {
-    // Aquí iría tu lógica de cierre de sesión
-    // Ejemplo: limpiar tokens, llamar a un endpoint, etc.
-    console.log('Cerrando sesión...');
+    dispatch({ type: 'LOGOUT' });
+    localStorage.removeItem('token');
     handleCloseMenu();
+    navigate('/login');
   };
+
+  const nombre = usuario?.username ?? 'Usuario';
+  const foto   = usuario?.imagenPerfil || usuario?.imagen || '';
 
   return (
     <>
-      {/* Botón que muestra Avatar + Nombre y abre el menú */}
       <Button
         color="inherit"
         onClick={handleOpenMenu}
         sx={{ display: 'flex', alignItems: 'center', textTransform: 'none' }}
       >
-        <Avatar
-          src={usuario?.imagenPerfil}
-          alt="Avatar"
-          sx={{ width: 32, height: 32, marginRight: 1 }}
-        />
-        <Typography variant="body1" sx={{ marginRight: 1 }}>
-          {usuario?.nombre || 'Invitado'}
-        </Typography>
+        <Avatar src={foto} alt={nombre} sx={{ width: 32, height: 32, mr: 1 }}>
+          {nombre?.[0] ?? '❓'}
+        </Avatar>
+        <Typography variant="body1" sx={{ mr: 0.5 }}>{nombre}</Typography>
         <KeyboardArrowDownIcon />
       </Button>
 
-      {/* Menú desplegable */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top',    horizontal: 'right' }}
       >
-        {/* Opción: Mis Pedidos */}
-        <MenuItem
-          component={Link}
-          to="/misPedidos"
-          onClick={handleCloseMenu}
-        >
-          <ListItemIcon>
-            <ShoppingCartIcon fontSize="small" />
-          </ListItemIcon>
+        <MenuItem component={Link} to="/misPedidos" onClick={handleCloseMenu}>
+          <ListItemIcon><ShoppingCartIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Mis Pedidos" />
         </MenuItem>
-
-        {/* Opción: Perfil */}
-        <MenuItem
-          component={Link}
-          to="/perfil"
-          onClick={handleCloseMenu}
-        >
-          <ListItemIcon>
-            <PersonIcon fontSize="small" />
-          </ListItemIcon>
+        <MenuItem component={Link} to="/perfil" onClick={handleCloseMenu}>
+          <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Perfil" />
         </MenuItem>
-
-        {/* Opción: Cerrar Sesión */}
         <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <LogoutIcon fontSize="small" />
-          </ListItemIcon>
+          <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
           <ListItemText primary="Cerrar Sesión" />
         </MenuItem>
       </Menu>

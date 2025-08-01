@@ -26,10 +26,10 @@ const Productos = () => {
 
   // Estado para almacenar el paginador completo
   const [paginadorProductos, setPaginadorProductos] = useState({
-    count: 0,
+    count: 9,
     pageIndex: 1,
     pageSize: 3, // Tamaño de página por defecto
-    pageCount: 0,
+    pageCount: 3,
     data: []
   });
 

@@ -1,106 +1,91 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { TextField, Button, Grid, Paper, Typography } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Grid,
+  Paper,
+  Typography,
+  FormControlLabel,
+  Checkbox,
+  Snackbar,
+  Alert
+} from "@mui/material";
+import { getUsuarioById, agregarRole } from "../../../actions/UsuarioActions";
 
 const EditarUsuario = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [usuario, setUsuario] = useState({
     id: "",
     nombre: "",
     email: "",
-    telefono: "",
-    direccion: "",
-    rol: "Comprador",
+    rol: "",
   });
-  const [errors, setErrors] = useState({});
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
-    // Simulación de obtención del usuario por ID
-    // Reemplaza esta parte por una llamada a API según tu backend
     const fetchUsuario = async () => {
-      const data = {
-        id,
-        nombre: `Comprador ${id}`,
-        email: `comprador${id}@example.com`,
-        telefono: "555-0000",
-        direccion: "Calle Falsa 456",
-        rol: "Comprador",
-      };
-      setUsuario(data);
+      try {
+        const data = await getUsuarioById(id);
+        setUsuario({
+          id: data.id,
+          nombre: data.nombre,
+          email: data.email,
+          rol: data.admin ? "Admin" : "Usuario",
+        });
+        setIsAdmin(data.admin); // ✅ Corrección clave aquí
+      } catch (error) {
+        console.error("Error al obtener usuario:", error);
+      }
     };
     fetchUsuario();
   }, [id]);
 
-  const validate = () => {
-    let temp = {};
-    temp.nombre = usuario.nombre ? "" : "El nombre es requerido.";
-    temp.email = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(usuario.email)
-      ? ""
-      : "El email es inválido.";
-    temp.telefono = usuario.telefono ? "" : "El teléfono es requerido.";
-    temp.direccion = usuario.direccion ? "" : "La dirección es requerida.";
-    setErrors(temp);
-    return Object.values(temp).every((x) => x === "");
-  };
-
-  const handleChange = (field, value) => {
-    setUsuario({ ...usuario, [field]: value });
-  };
-
-  const handleSave = () => {
-    if (validate()) {
-      // Aquí se simula la actualización del usuario
-      console.log("Guardando usuario:", usuario);
-      // En producción se haría una llamada a la API para actualizar
-      navigate("/usuarios");
+  const handleSave = async () => {
+    try {
+      await agregarRole(usuario.id, isAdmin);
+      setSnackbar({
+        open: true,
+        message: "Usuario actualizado correctamente.",
+        severity: "success",
+      });
+      setTimeout(() => navigate("/usuarios"), 1000); // Opcional: navegar luego de guardar
+    } catch (error) {
+      console.error("Error al guardar usuario:", error);
+      setSnackbar({
+        open: true,
+        message: "Error al guardar usuario.",
+        severity: "error",
+      });
     }
   };
 
   return (
     <Paper style={{ padding: 16, maxWidth: 600, margin: "auto", marginTop: 16 }}>
       <Typography variant="h6" gutterBottom>
-        Editar Comprador
+        Editar Usuario
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <TextField
-            label="Nombre"
-            fullWidth
-            value={usuario.nombre}
-            onChange={(e) => handleChange("nombre", e.target.value)}
-            error={!!errors.nombre}
-            helperText={errors.nombre}
-          />
+          <TextField label="Nombre" fullWidth value={usuario.nombre} InputProps={{ readOnly: true }} />
         </Grid>
         <Grid item xs={12}>
-          <TextField
-            label="Email"
-            fullWidth
-            value={usuario.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-            error={!!errors.email}
-            helperText={errors.email}
-          />
+          <TextField label="Email" fullWidth value={usuario.email} InputProps={{ readOnly: true }} />
         </Grid>
         <Grid item xs={12}>
-          <TextField
-            label="Teléfono"
-            fullWidth
-            value={usuario.telefono}
-            onChange={(e) => handleChange("telefono", e.target.value)}
-            error={!!errors.telefono}
-            helperText={errors.telefono}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            label="Dirección"
-            fullWidth
-            value={usuario.direccion}
-            onChange={(e) => handleChange("direccion", e.target.value)}
-            error={!!errors.direccion}
-            helperText={errors.direccion}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isAdmin}
+                onChange={(e) => setIsAdmin(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Usuario Administrador"
           />
         </Grid>
         <Grid item xs={12} style={{ textAlign: "right" }}>
@@ -112,9 +97,19 @@ const EditarUsuario = () => {
           </Button>
         </Grid>
       </Grid>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 };
 
 export default EditarUsuario;
-

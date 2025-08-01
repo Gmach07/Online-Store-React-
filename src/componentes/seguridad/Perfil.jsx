@@ -1,10 +1,10 @@
+// src/components/Perfil.jsx
 import React, { useState } from 'react';
 import {
   Avatar,
   Container,
   Divider,
   Grid,
-  Icon,
   Typography,
   TextField,
   Button,
@@ -15,189 +15,198 @@ import {
   ListItemIcon,
   ListItemText
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import ImageUploading from 'react-images-uploading';
 import {
   Email,
   LocationOn,
   Payment,
   History,
-  CameraAlt,
   Person,
   Lock
 } from '@mui/icons-material';
-
-const useStyles = makeStyles((theme) => ({
-  container: {
-    marginTop: theme.spacing(4),
-    padding: theme.spacing(2),
-  },
-  paper: {
-    padding: theme.spacing(4),
-    borderRadius: '16px',
-    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
-  },
-  title: {
-    fontWeight: 700,
-    marginBottom: theme.spacing(3),
-    color: theme.palette.primary.main,
-  },
-  form: {
-    marginTop: theme.spacing(3),
-  },
-  avatarWrapper: {
-    position: 'relative',
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: theme.spacing(3),
-  },
-  avatarPerfil: {
-    width: theme.spacing(20),
-    height: theme.spacing(20),
-    border: `4px solid ${theme.palette.primary.main}`,
-  },
-  uploadButton: {
-    borderRadius: '50%',
-    padding: 12,
-    backgroundColor: theme.palette.primary.main,
-    color: '#fff',
-    position: 'absolute',
-    bottom: 8,
-    right: 'calc(50% - 60px)',
-    '&:hover': {
-      backgroundColor: theme.palette.primary.dark,
-    },
-  },
-  input: {
-    marginBottom: theme.spacing(3),
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '12px',
-    }
-  },
-  divider: {
-    margin: theme.spacing(2, 0),
-    backgroundColor: theme.palette.divider,
-  },
-  button: {
-    marginTop: theme.spacing(3),
-    fontWeight: 700,
-    padding: theme.spacing(1.5),
-    borderRadius: '12px',
-    fontSize: '1rem',
-  },
-  userInfo: {
-    padding: theme.spacing(4),
-    borderRadius: '16px',
-    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
-    height: '100%',
-  },
-  listItem: {
-    padding: theme.spacing(2),
-    borderRadius: '8px',
-    marginBottom: theme.spacing(2),
-    transition: '0.3s',
-    '&:hover': {
-      backgroundColor: theme.palette.action.hover,
-    }
-  },
-}));
+import { useStateValue } from '../../contexto/store';
+import { actualizarPerfilUsuario } from '../../actions/UsuarioActions';
+import { uploadImage } from '../../firebase';
 
 const Perfil = () => {
-  const classes = useStyles();
-  const [images, setImages] = useState([]);
+  const [{ sesionUsuario }, dispatch] = useStateValue();
 
-  const onChangeImage = (imageList) => {
-    setImages(imageList);
+  if (!sesionUsuario?.usuario || !sesionUsuario.usuario.id) {
+    return <Typography sx={{ m: 4 }}>Cargando datos de usuario...</Typography>;
+  }
+
+  const [nombre, setNombre] = useState(sesionUsuario.usuario.nombre || '');
+  const [apellido, setApellido] = useState(sesionUsuario.usuario.apellido || '');
+  const [username, setUsername] = useState(sesionUsuario.usuario.username || '');
+  const [email] = useState(sesionUsuario.usuario.email || '');
+  const [nuevaPass, setNuevaPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenURL, setImagenURL] = useState(sesionUsuario.usuario.imagen || '');
+
+  const handleGuardar = async () => {
+    if (nuevaPass && nuevaPass !== confirmPass) {
+      alert('La contraseña no coincide con la confirmación.');
+      return;
+    }
+
+    let urlImagenFinal = sesionUsuario.usuario.imagen || '';
+
+    if (imagenFile) {
+      try {
+        urlImagenFinal = await uploadImage(imagenFile);
+      } catch (error) {
+        console.error('Error subiendo imagen:', error);
+        alert('No se pudo subir la imagen.');
+        return;
+      }
+    }
+
+    const datosActualizar = {
+      id: sesionUsuario.usuario.id,
+      email: sesionUsuario.usuario.email,
+      nombre,
+      apellido,
+      username,
+      password: nuevaPass?.trim() ? nuevaPass.trim() : undefined,
+      imagen: urlImagenFinal
+    };
+
+    try {
+      setGuardando(true);
+      await actualizarPerfilUsuario(datosActualizar, dispatch);
+      alert('Perfil actualizado correctamente.');
+
+      // Actualizar localmente la imagen
+      setImagenFile(null);
+      setImagenURL(urlImagenFinal);
+      setNuevaPass('');
+      setConfirmPass('');
+    } catch (error) {
+      console.error('Error al actualizar perfil:', error);
+      alert(`Error al actualizar perfil: ${error}`);
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
-    <Container maxWidth="lg" className={classes.container}>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Grid container spacing={4}>
         <Grid item xs={12} md={4}>
-          <Paper className={classes.paper}>
-            <Typography variant="h5" className={classes.title}>
+          <Paper sx={{ p: 4, borderRadius: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
               Mi Perfil
             </Typography>
-            
-            <Box className={classes.avatarWrapper}>
-              <ImageUploading
-                value={images}
-                onChange={onChangeImage}
-                maxNumber={1}
-                dataURLKey="data_url"
-              >
-                {({ imageList, onImageUpload, onImageUpdate }) => (
-                  <Box position="relative">
-                    <Avatar
-                      className={classes.avatarPerfil}
-                      src={imageList[0]?.data_url || "https://i.pravatar.cc/300"}
-                    />
-                    <Button
-                      className={classes.uploadButton}
-                      onClick={() => imageList.length ? onImageUpdate(0) : onImageUpload()}
-                    >
-                      <CameraAlt fontSize="medium" />
-                    </Button>
-                  </Box>
-                )}
-              </ImageUploading>
+
+            <Box display="flex" justifyContent="center" mb={2}>
+              <Avatar
+                sx={{
+                  width: 120,
+                  height: 120,
+                  border: '4px solid',
+                  borderColor: 'primary.main'
+                }}
+                src={imagenURL || 'https://i.pravatar.cc/300'}
+              />
             </Box>
 
-            <form className={classes.form}>
+            <Box display="flex" justifyContent="center" mb={3}>
+              <Button
+                variant="outlined"
+                component="label"
+                fullWidth
+                sx={{ mt: 1 }}
+              >
+                Seleccionar Imagen
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImagenFile(e.target.files[0]);
+                      const preview = URL.createObjectURL(e.target.files[0]);
+                      setImagenURL(preview);
+                    }
+                  }}
+                />
+              </Button>
+            </Box>
+
+            <form>
               <TextField
-                className={classes.input}
+                sx={{ mb: 2 }}
                 label="Nombre"
                 variant="outlined"
                 fullWidth
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
                 InputProps={{
                   startAdornment: <Person color="action" sx={{ mr: 1 }} />
                 }}
-                value="German Luis"
               />
-              
+
               <TextField
-                className={classes.input}
+                sx={{ mb: 2 }}
                 label="Apellido"
                 variant="outlined"
                 fullWidth
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
                 InputProps={{
                   startAdornment: <Person color="action" sx={{ mr: 1 }} />
                 }}
-                value="Machado Mejia"
               />
-              
+
               <TextField
-                className={classes.input}
+                sx={{ mb: 2 }}
+                label="Username"
+                variant="outlined"
+                fullWidth
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                InputProps={{
+                  startAdornment: <Person color="action" sx={{ mr: 1 }} />
+                }}
+              />
+
+              <TextField
+                sx={{ mb: 2 }}
                 label="Correo"
                 type="email"
                 variant="outlined"
                 fullWidth
+                value={email}
+                disabled
                 InputProps={{
                   startAdornment: <Email color="action" sx={{ mr: 1 }} />
                 }}
-                value="gmachado72015@gmail.com"
-                disabled
               />
-              
-              <Divider className={classes.divider} />
+
+              <Divider sx={{ my: 2 }} />
 
               <TextField
-                className={classes.input}
+                sx={{ mb: 2 }}
                 label="Nueva Contraseña"
                 type="password"
                 variant="outlined"
                 fullWidth
+                value={nuevaPass}
+                onChange={(e) => setNuevaPass(e.target.value)}
                 InputProps={{
                   startAdornment: <Lock color="action" sx={{ mr: 1 }} />
                 }}
               />
-              
+
               <TextField
-                className={classes.input}
+                sx={{ mb: 2 }}
                 label="Confirmar Contraseña"
                 type="password"
                 variant="outlined"
                 fullWidth
+                value={confirmPass}
+                onChange={(e) => setConfirmPass(e.target.value)}
                 InputProps={{
                   startAdornment: <Lock color="action" sx={{ mr: 1 }} />
                 }}
@@ -207,22 +216,24 @@ const Perfil = () => {
                 fullWidth
                 variant="contained"
                 size="large"
-                className={classes.button}
+                sx={{ mt: 2, fontWeight: 700, py: 1.5, borderRadius: '12px' }}
+                onClick={handleGuardar}
+                disabled={guardando}
               >
-                Guardar Cambios
+                {guardando ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
             </form>
           </Paper>
         </Grid>
 
         <Grid item xs={12} md={8}>
-          <Paper className={classes.userInfo}>
-            <Typography variant="h5" className={classes.title}>
+          <Paper sx={{ p: 4, borderRadius: 2, height: '100%' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
               Actividad Reciente
             </Typography>
-            
+
             <List>
-              <ListItem className={classes.listItem}>
+              <ListItem sx={{ mb: 1 }}>
                 <ListItemIcon>
                   <History color="primary" />
                 </ListItemIcon>
@@ -231,8 +242,7 @@ const Perfil = () => {
                   secondary="Entregado el 15 de marzo, 2024"
                 />
               </ListItem>
-              
-              <ListItem className={classes.listItem}>
+              <ListItem sx={{ mb: 1 }}>
                 <ListItemIcon>
                   <LocationOn color="primary" />
                 </ListItemIcon>
@@ -241,8 +251,7 @@ const Perfil = () => {
                   secondary="Calle Falsa 123, Ciudad, País"
                 />
               </ListItem>
-              
-              <ListItem className={classes.listItem}>
+              <ListItem sx={{ mb: 1 }}>
                 <ListItemIcon>
                   <Payment color="primary" />
                 </ListItemIcon>
